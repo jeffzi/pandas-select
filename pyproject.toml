@@ -51,4 +51,4 @@ not_skip="__init__.py"
 use_parentheses=true
 
 known_first_party="pandas_select"
-known_third_party=[]
+known_third_party=["numpy", "pandas", "pytest"]
