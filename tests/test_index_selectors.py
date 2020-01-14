@@ -7,8 +7,7 @@ from pandas.testing import assert_frame_equal
 
 from pandas_select import OneOf
 
-from .utils import assert_col_indexer
-from .utils import assert_row_indexer
+from .utils import assert_col_indexer, assert_row_indexer
 
 
 @pytest.fixture

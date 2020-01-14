@@ -1,16 +1,13 @@
-from abc import ABC
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from inspect import signature
-from typing import List
-from typing import Union
+from typing import List, Union
 
-import numpy as np
 import pandas as pd
 
 
 class Selector(ABC):
     @abstractmethod
-    def select(self, df: pd.DataFrame) -> Union[List[str], np.ndarray]:
+    def select(self, df: pd.DataFrame) -> Union[List[str], "np.ndarray[np.bool]"]:
         raise NotImplementedError()
 
     def __call__(self, df: pd.DataFrame) -> Union[List[str], "np.ndarray[np.bool]"]:

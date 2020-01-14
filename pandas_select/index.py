@@ -1,8 +1,5 @@
 from abc import abstractmethod
-from typing import Any
-from typing import List
-from typing import Tuple
-from typing import Union
+from typing import Any, List, Tuple, Union
 
 import pandas as pd
 
