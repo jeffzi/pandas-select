@@ -9,7 +9,7 @@ description = ""
 authors = ["Jean-Francois Zinque <jzinque@gmail.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.5.3"
+python = "^3.6"
 pandas = ">=0.24.0"
 
 [tool.poetry.dev-dependencies]
