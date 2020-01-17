@@ -1,5 +1,6 @@
+import inspect
+
 from abc import ABC, abstractmethod
-from inspect import signature
 from typing import Iterable, Union
 
 import pandas as pd
@@ -18,7 +19,8 @@ class Selector(ABC):
 
     def __repr__(self):
         args = [
-            f"{param}={str(vars(self)[param])}"
-            for param in signature(self.__init__).parameters
+            f"{param}={repr(vars(self)[param])}"
+            for param in inspect.signature(self.__init__).parameters
+            if param in vars(self)  # param is a class attribute
         ]
         return f"{type(self).__name__}({', '.join(args)})"
