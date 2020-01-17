@@ -21,7 +21,7 @@ def where_df():
 
 def test_anywhere(where_df):
     selector = Anywhere(lambda x: x < 0)
-    expected = where_df.loc[[1, 2]].copy()
+    expected = where_df.loc[["neg", "mixed"]].copy()
     assert_frame_equal(where_df[selector], expected)
 
 
