@@ -14,6 +14,6 @@ def assert_col_indexer(df: pd.DataFrame, selector: Selector, expected: List[Any]
 
 
 def assert_row_indexer(df: pd.DataFrame, selector: Selector, expected: List[Any]):
-    assert selector.select(df) == expected
+    assert selector.select(df).tolist() == expected
     assert df.loc[selector, :].index.tolist() == expected
     assert_frame_equal(df.loc[selector], df.loc[expected])
