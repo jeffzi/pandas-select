@@ -1,10 +1,13 @@
 from abc import abstractmethod
-from typing import Any, List, Tuple, Union
+from typing import Any, Iterable, List, Tuple, Union
 
 import pandas as pd
 
 from .base import Selector
 from .utils import to_list
+
+
+IndexMaskValues = Union[Iterable[int], Iterable[bool], Iterable[str], Iterable[Tuple]]
 
 
 class IndexSelector(Selector):
@@ -13,15 +16,15 @@ class IndexSelector(Selector):
         self.level = level
 
     @abstractmethod
-    def select_index(self, index=pd.Index) -> List[Union[Any, Tuple]]:
+    def get_index_mask(self, index: pd.Index) -> IndexMaskValues:
         raise NotImplementedError()
 
-    def select(self, df: pd.DataFrame) -> List[Union[Any, Tuple]]:
+    def select(self, df: pd.DataFrame) -> pd.Index:
         index = df._get_axis(self.axis)
         level = index.get_level_values(self.level)
-        return index[self.select_index(level)].tolist()
+        return index[self.get_index_mask(level)]
 
-    def __call__(self, df: pd.DataFrame) -> List[str]:
+    def __call__(self, df: pd.DataFrame) -> pd.Index:
         return self.select(df)
 
 
@@ -32,5 +35,5 @@ class OneOf(IndexSelector):
         super().__init__(axis, level)
         self.values = to_list(values)
 
-    def select_index(self, index=pd.Index) -> List[Union[Any, Tuple]]:
+    def get_index_mask(self, index: pd.Index) -> Iterable[bool]:
         return index.isin(self.values)
