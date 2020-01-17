@@ -1,8 +1,9 @@
 from typing import Callable, Iterable, List, Union
 
+import numpy as np
 import pandas as pd
 
-from .base import Selector
+from .base import BinarySelector, Selector
 
 
 Cond = Callable[[pd.Series], Iterable[bool]]
@@ -21,6 +22,38 @@ class Where(Selector):
             df = df[self.columns]
         masks = df.apply(self.cond)
         return self._join(masks)
+
+    def __and__(self, other):
+        return BinarySelector(self, other, np.logical_and, "&")
+
+    def __rand__(self, other):
+        return BinarySelector(other, self, np.logical_and, "&")
+
+    def __or__(self, other):
+        return BinarySelector(self, other, np.logical_or, "&")
+
+    def __ror__(self, other):
+        return BinarySelector(other, self, np.logical_or, "&")
+
+    def __xor__(self, other):
+        return BinarySelector(self, other, np.logical_xor, "^")
+
+    def __rxor__(self, other):
+        return BinarySelector(other, self, np.logical_xor, "^")
+
+    def __invert__(self):
+        return WhereNot(self)
+
+
+class WhereNot(Selector):
+    def __init__(self, selector: Where):
+        self.selector = selector
+
+    def select(self, df: pd.DataFrame) -> Iterable[bool]:
+        return np.invert(self.selector(df))
+
+    def __repr__(self):
+        return f"~{self.selector}"
 
 
 class Anywhere(Where):
