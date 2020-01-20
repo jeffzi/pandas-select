@@ -1,7 +1,7 @@
 import inspect
 
 from abc import ABC, abstractmethod
-from typing import Callable, Iterable, Union
+from typing import Callable, Iterable, List, Union
 
 import pandas as pd
 
@@ -17,22 +17,22 @@ class Selector(ABC):
     def __call__(self, df: pd.DataFrame) -> IndexerValues:
         return self.select(df)
 
-    def _format(self, args=None):
+    def _format(self, args: List[str] = None) -> str:
         pretty_cls = type(self).__name__
         pretty_args = f"({', '.join(args)})" if args else ""
         return pretty_cls + pretty_args
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         args = [
             f"{param}={repr(vars(self)[param])}"
-            for param in inspect.signature(self.__init__).parameters
+            for param in inspect.signature(self.__class__).parameters
             if param in vars(self)  # param is a class attribute
         ]
         return self._format(args)
 
-    def __str__(self):
+    def __str__(self) -> str:
         args = []
-        for param_name, param in inspect.signature(self.__init__).parameters.items():
+        for param_name, param in inspect.signature(self.__class__).parameters.items():
             try:
                 value = vars(self)[param_name]
                 if param.default != value:
@@ -59,5 +59,5 @@ class BinarySelector(Selector, ABC):
     def select(self, df: pd.DataFrame) -> IndexerValues:
         return self.op(self.left(df), self.right(df))
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"{self.left} {self.op_name} {self.right}"

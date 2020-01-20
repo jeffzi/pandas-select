@@ -23,25 +23,25 @@ class Where(Selector):
         masks = df.apply(self.cond)
         return self._join(masks)
 
-    def __and__(self, other):
+    def __and__(self, other: "Where") -> Selector:
         return BinarySelector(self, other, np.logical_and, "&")
 
-    def __rand__(self, other):
+    def __rand__(self, other: "Where") -> Selector:
         return BinarySelector(other, self, np.logical_and, "&")
 
-    def __or__(self, other):
+    def __or__(self, other: "Where") -> Selector:
         return BinarySelector(self, other, np.logical_or, "&")
 
-    def __ror__(self, other):
+    def __ror__(self, other: "Where") -> Selector:
         return BinarySelector(other, self, np.logical_or, "&")
 
-    def __xor__(self, other):
+    def __xor__(self, other: "Where") -> Selector:
         return BinarySelector(self, other, np.logical_xor, "^")
 
-    def __rxor__(self, other):
+    def __rxor__(self, other: "Where") -> Selector:
         return BinarySelector(other, self, np.logical_xor, "^")
 
-    def __invert__(self):
+    def __invert__(self) -> Selector:
         return WhereNot(self)
 
 
@@ -52,7 +52,7 @@ class WhereNot(Selector):
     def select(self, df: pd.DataFrame) -> np.ndarray:
         return np.invert(self.selector(df))
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"~{self.selector}"
 
 
