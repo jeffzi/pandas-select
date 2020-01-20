@@ -10,6 +10,12 @@ from .base import BinarySelector, Selector
 Cond = Callable[[pd.Series], Sequence[bool]]
 
 
+def _assert_can_do_logical_op(other):
+    if not isinstance(other, Where):
+        raise TypeError("Input must be a 'Where' selector.")
+    return True
+
+
 class Where(Selector, ABC):
     def __init__(self, cond: Cond, columns: Union[str, List[str]] = None):
         self.cond = cond
@@ -26,21 +32,27 @@ class Where(Selector, ABC):
         return self._join(masks)
 
     def __and__(self, other: "Where") -> Selector:
+        _assert_can_do_logical_op(other)
         return BinarySelector(self, other, np.logical_and, "&")
 
     def __rand__(self, other: "Where") -> Selector:
+        _assert_can_do_logical_op(other)
         return BinarySelector(other, self, np.logical_and, "&")
 
     def __or__(self, other: "Where") -> Selector:
+        _assert_can_do_logical_op(other)
         return BinarySelector(self, other, np.logical_or, "&")
 
     def __ror__(self, other: "Where") -> Selector:
+        _assert_can_do_logical_op(other)
         return BinarySelector(other, self, np.logical_or, "&")
 
     def __xor__(self, other: "Where") -> Selector:
+        _assert_can_do_logical_op(other)
         return BinarySelector(self, other, np.logical_xor, "^")
 
     def __rxor__(self, other: "Where") -> Selector:
+        _assert_can_do_logical_op(other)
         return BinarySelector(other, self, np.logical_xor, "^")
 
     def __invert__(self) -> Selector:
