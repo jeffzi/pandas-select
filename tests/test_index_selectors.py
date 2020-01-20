@@ -7,7 +7,7 @@ from pandas.testing import assert_frame_equal
 
 from pandas_select import OneOf
 
-from .utils import assert_col_indexer, assert_row_indexer, pretty_param
+from .utils import assert_col_indexer, assert_row_indexer, pp_param
 
 
 # ##############################  FIXTURES  ##############################
@@ -73,12 +73,12 @@ def df_mi():
 @pytest.mark.parametrize(
     "cols, expected",
     [
-        pretty_param(["int"], ["int"]),
-        pretty_param(["int", "float"], ["int", "float"]),
-        pretty_param("int", ["int"]),
-        pretty_param(["float", "int"], ["int", "float"]),
-        pretty_param("invalid", []),
-        pretty_param(-99, []),
+        pp_param(["int"], ["int"]),
+        pp_param(["int", "float"], ["int", "float"]),
+        pp_param("int", ["int"]),
+        pp_param(["float", "int"], ["int", "float"]),
+        pp_param("invalid", []),
+        pp_param(-99, []),
     ],
 )
 def test_one_of_col(df, cols, expected):
@@ -102,12 +102,12 @@ def test_one_of_row_duplicates(df):
 @pytest.mark.parametrize(
     "cols, expected",
     [
-        pretty_param([0], [0]),
-        pretty_param([0, 1], [0, 1]),
-        pretty_param(0, [0]),
-        pretty_param([1, 0], [0, 1]),
-        pretty_param(-99, []),
-        pretty_param("invalid", []),
+        pp_param([0], [0]),
+        pp_param([0, 1], [0, 1]),
+        pp_param(0, [0]),
+        pp_param([1, 0], [0, 1]),
+        pp_param(-99, []),
+        pp_param("invalid", []),
     ],
 )
 def test_one_of_row(df, cols, expected):
@@ -117,21 +117,21 @@ def test_one_of_row(df, cols, expected):
 @pytest.mark.parametrize(
     "level, cols, expected",
     [
-        pretty_param(0, ["int"], [("int", "number")]),
-        pretty_param(0, ["int", "float"], [("int", "number"), ("float", "number")]),
-        pretty_param(0, ["float", "int"], [("int", "number"), ("float", "number")]),
-        pretty_param(0, [99], []),
-        pretty_param(
+        pp_param(0, ["int"], [("int", "number")]),
+        pp_param(0, ["int", "float"], [("int", "number"), ("float", "number")]),
+        pp_param(0, ["float", "int"], [("int", "number"), ("float", "number")]),
+        pp_param(0, [99], []),
+        pp_param(
             1,
             ["ordinal", "nominal"],
             [("category", "nominal"), ("category", "ordinal"), ("string", "nominal")],
         ),
-        pretty_param(
+        pp_param(
             1,
             ["nominal", "ordinal"],
             [("category", "nominal"), ("category", "ordinal"), ("string", "nominal")],
         ),
-        pretty_param(1, [99], []),
+        pp_param(1, [99], []),
     ],
 )
 def test_one_of_col_multi_index(df_mi, level, cols, expected):
@@ -141,11 +141,11 @@ def test_one_of_col_multi_index(df_mi, level, cols, expected):
 @pytest.mark.parametrize(
     "level, cols, expected",
     [
-        pretty_param(0, "A", [("A", 0), ("A", 1)]),
-        pretty_param(0, 99, []),
-        pretty_param(1, [0, 1], [("A", 0), ("A", 1)]),
-        pretty_param(1, [1, 0], [("A", 0), ("A", 1)]),
-        pretty_param(1, 99, []),
+        pp_param(0, "A", [("A", 0), ("A", 1)]),
+        pp_param(0, 99, []),
+        pp_param(1, [0, 1], [("A", 0), ("A", 1)]),
+        pp_param(1, [1, 0], [("A", 0), ("A", 1)]),
+        pp_param(1, 99, []),
     ],
 )
 def test_one_of_row_multi_index(df_mi, level, cols, expected):

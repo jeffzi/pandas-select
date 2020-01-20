@@ -20,6 +20,6 @@ def assert_row_indexer(df: pd.DataFrame, selector: Selector, expected: List[Any]
     assert_frame_equal(df.loc[selector], df.loc[expected])
 
 
-def pretty_param(*values, **kw):
+def pp_param(*values, **kw):
     id = "-".join(map(str, values))
     return pytest.param(*values, id=id, **kw)
