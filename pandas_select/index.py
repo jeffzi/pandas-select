@@ -1,13 +1,16 @@
 from abc import abstractmethod
-from typing import Any, Iterable, List, Tuple, Union
+from typing import Any, List, Sequence, Tuple, Union
 
+import numpy as np
 import pandas as pd
 
 from .base import Selector
 from .utils import to_list
 
 
-IndexMaskValues = Union[Iterable[int], Iterable[bool], Iterable[str], Iterable[Tuple]]
+IndexMaskValues = Union[
+    Sequence[int], Sequence[bool], Sequence[str], Sequence[Tuple[str]]
+]
 
 
 class IndexSelector(Selector):
@@ -35,5 +38,5 @@ class OneOf(IndexSelector):
         super().__init__(axis, level)
         self.values = to_list(values)
 
-    def get_index_mask(self, index: pd.Index) -> Iterable[bool]:
+    def get_index_mask(self, index: pd.Index) -> np.ndarray:
         return index.isin(self.values)
