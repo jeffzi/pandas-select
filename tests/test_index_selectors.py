@@ -129,8 +129,8 @@ def test_exact_col_multi_index(df_mi, level, cols, expected):
 @pytest.mark.parametrize(
     "level, cols, expected",
     [
-        pp_param(0, "A", [("A", 0), ("A", 1)], id="basic"),
-        pp_param(1, [1, 0], [("A", 1), ("A", 0)], id="order"),
+        pp_param(0, "A", [("A", 0), ("A", 1)]),
+        pp_param(1, [1, 0], [("A", 1), ("A", 0)]),
     ],
 )
 def test_exact_row_multi_index(df_mi, level, cols, expected):
