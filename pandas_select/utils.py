@@ -4,10 +4,13 @@ from collections.abc import Sequence
 from typing import Any, Union
 
 
-def is_seq(x: Any) -> bool:
-    """ Return True if x is a Sequence, except if x is a string """
+def is_list_like(x: Any) -> bool:
+    """  Check if the object is list-like.
+
+    Strings objects are not considered list-like.
+    """
     return isinstance(x, Sequence) and not isinstance(x, str)
 
 
 def to_list(x: Union[Any, typing.Sequence[Any]]) -> typing.Sequence[Any]:
-    return x if is_seq(x) else [x]
+    return x if is_list_like(x) else [x]
