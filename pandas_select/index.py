@@ -27,9 +27,6 @@ class IndexSelector(Selector):
         level = index.get_level_values(self.level)
         return index[self.get_index_mask(level)]
 
-    def __call__(self, df: pd.DataFrame) -> pd.Index:
-        return self.select(df)
-
 
 class OneOf(IndexSelector):
     def __init__(
