@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod
 from typing import Callable, List, Sequence, Union
 
 import numpy as np
@@ -9,11 +10,12 @@ from .base import BinarySelector, Selector
 Cond = Callable[[pd.Series], Sequence[bool]]
 
 
-class Where(Selector):
+class Where(Selector, ABC):
     def __init__(self, cond: Cond, columns: Union[str, List[str]] = None):
         self.cond = cond
         self.columns = columns
 
+    @abstractmethod
     def _join(self, df: pd.DataFrame) -> Sequence[bool]:
         raise NotImplementedError()
 
