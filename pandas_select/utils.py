@@ -9,7 +9,7 @@ def is_list_like(x: Any) -> bool:
 
     Strings objects are not considered list-like.
     """
-    return isinstance(x, Sequence) and not isinstance(x, str)
+    return isinstance(x, Sequence) and not isinstance(x, (str, tuple))
 
 
 def to_list(x: Union[Any, typing.Sequence[Any]]) -> typing.Sequence[Any]:
