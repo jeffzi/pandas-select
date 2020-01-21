@@ -9,7 +9,7 @@ from .utils import to_list
 
 
 IndexMaskValues = Union[
-    Sequence[int], Sequence[bool], Sequence[str], Sequence[Tuple[str]]
+    Sequence[int], Sequence[bool], Sequence[str], Sequence[Tuple[Any]]
 ]
 
 
