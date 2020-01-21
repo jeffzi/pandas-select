@@ -113,6 +113,12 @@ def test_exact_row_duplicates(df):
 @pytest.mark.parametrize(
     "level, cols, expected",
     [
+        pp_param(None, [("int", "number")], [("int", "number")]),
+        pp_param(
+            None,
+            [("int", "number"), ("float", "number")],
+            [("int", "number"), ("float", "number")],
+        ),
         pp_param(0, ["int"], [("int", "number")]),
         pp_param(0, ["int", "float"], [("int", "number"), ("float", "number")]),
         pp_param(
@@ -129,6 +135,7 @@ def test_exact_col_multi_index(df_mi, level, cols, expected):
 @pytest.mark.parametrize(
     "level, cols, expected",
     [
+        pp_param(None, ("A", 0), [("A", 0)]),
         pp_param(0, "A", [("A", 0), ("A", 1)]),
         pp_param(1, [1, 0], [("A", 1), ("A", 0)]),
     ],
@@ -187,6 +194,16 @@ def test_one_of_row(df, cols, expected):
 @pytest.mark.parametrize(
     "level, cols, expected",
     [
+        pp_param(
+            None,
+            [("int", "number"), ("float", "number")],
+            [("int", "number"), ("float", "number")],
+        ),
+        pp_param(
+            None,
+            [("float", "number"), ("int", "number")],
+            [("int", "number"), ("float", "number")],
+        ),
         pp_param(0, ["int"], [("int", "number")]),
         pp_param(0, ["int", "float"], [("int", "number"), ("float", "number")]),
         pp_param(0, ["float", "int"], [("int", "number"), ("float", "number")]),
@@ -211,6 +228,7 @@ def test_one_of_col_multi_index(df_mi, level, cols, expected):
 @pytest.mark.parametrize(
     "level, cols, expected",
     [
+        pp_param(None, ("A", 0), [("A", 0)]),
         pp_param(0, "A", [("A", 0), ("A", 1)]),
         pp_param(0, 99, []),
         pp_param(1, [0, 1], [("A", 0), ("A", 1)]),
