@@ -21,5 +21,5 @@ def assert_row_indexer(df: pd.DataFrame, selector: Selector, expected: List[Any]
 
 
 def pp_param(*values, **kw):
-    id = "-".join(map(str, values))
+    id = kw.pop("id", "-".join(map(str, values)))
     return pytest.param(*values, id=id, **kw)
