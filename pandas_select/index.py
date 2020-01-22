@@ -154,7 +154,10 @@ class Exact(IndexSelector):
 
 class OneOf(IndexSelector):
     def __init__(
-        self, values: List[Any], axis: Union[int, str] = "columns", level: int = 0
+        self,
+        values: List[Any],
+        axis: Union[int, str] = "columns",
+        level: Optional[int] = None,
     ):
         super().__init__(axis, level)
         self.values = to_list(values)
