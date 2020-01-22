@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Callable, List, Sequence, Union
+from typing import Any, Callable, List, Sequence, Union
 
 import numpy as np
 import pandas as pd
@@ -10,10 +10,9 @@ from .base import BinarySelector, Selector
 Cond = Callable[[pd.Series], Sequence[bool]]
 
 
-def _assert_can_do_logical_op(other):
+def _assert_can_do_logical_op(other: Any) -> None:
     if not isinstance(other, Where):
         raise TypeError("Input must be a 'Where' selector.")
-    return True
 
 
 class Where(Selector, ABC):

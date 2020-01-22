@@ -34,7 +34,7 @@ class IndexSelector(Selector):
 class Exact(IndexSelector):
     def __init__(
         self,
-        values: Union[str, List[str]],
+        values: Union[Any, List],
         axis: Union[int, str] = "columns",
         level: int = 0,
     ):

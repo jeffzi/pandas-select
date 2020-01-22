@@ -1,20 +1,17 @@
 import inspect
 
 from abc import ABC, abstractmethod
-from typing import Callable, Iterable, List, Union
+from typing import Callable, List, Sequence
 
 import pandas as pd
 
 
-IndexerValues = Union[pd.Index, Iterable[bool]]
-
-
 class Selector(ABC):
     @abstractmethod
-    def select(self, df: pd.DataFrame) -> IndexerValues:
+    def select(self, df: pd.DataFrame) -> Sequence:
         raise NotImplementedError()
 
-    def __call__(self, df: pd.DataFrame) -> IndexerValues:
+    def __call__(self, df: pd.DataFrame) -> Sequence:
         return self.select(df)
 
     def _format(self, args: List[str] = None) -> str:
@@ -48,7 +45,7 @@ class BinarySelector(Selector, ABC):
         self,
         left: Selector,
         right: Selector,
-        op: Callable[[IndexerValues, IndexerValues], IndexerValues],
+        op: Callable[[Sequence, Sequence], Sequence],
         op_name: str,
     ):
         self.op = op
@@ -56,7 +53,7 @@ class BinarySelector(Selector, ABC):
         self.left = left
         self.right = right
 
-    def select(self, df: pd.DataFrame) -> IndexerValues:
+    def select(self, df: pd.DataFrame) -> Sequence:
         return self.op(self.left(df), self.right(df))
 
     def __repr__(self) -> str:
