@@ -4,12 +4,16 @@ from pandas.testing import assert_frame_equal
 
 
 def assert_col_indexer(df, selector, expected):
+    print(f"{selector} selected:\n\t{selector.select(df)}")
+
     assert list(selector.select(df)) == expected
     assert df.loc[:, selector].columns.tolist() == expected
     assert_frame_equal(df[selector], df[expected])
 
 
 def assert_row_indexer(df, selector, expected):
+    print(f"{selector} selected:\n\t{selector.select(df)}")
+
     assert list(selector.select(df)) == expected
     assert df.loc[selector, :].index.tolist() == expected
     assert_frame_equal(df.loc[selector], df.loc[expected])
