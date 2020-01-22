@@ -1,11 +1,11 @@
 from abc import abstractmethod
 from collections import Counter
-from typing import Any, Iterable, List, Optional, Sequence, Tuple, Union
+from typing import Any, Callable, Iterable, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
 import pandas as pd
 
-from .base import Selector
+from .base import BinarySelector, Selector
 from .utils import to_list
 
 
@@ -30,6 +30,75 @@ class IndexSelector(Selector):
         else:
             level = index
         return index[self._get_index_mask(level)]
+
+    def __and__(self, other: Any) -> Selector:
+        return _make_binary_op(self, other, _logical_and, "&")
+
+    def __rand__(self, other: Any) -> Selector:
+        return _make_binary_op(other, self, _logical_and, "&")
+
+    def __or__(self, other: Any) -> Selector:
+        return _make_binary_op(self, other, _logical_or, "|")
+
+    def __ror__(self, other: Any) -> Selector:
+        return _make_binary_op(other, self, _logical_or, "|")
+
+    def __xor__(self, other: Any) -> Selector:
+        return _make_binary_op(self, other, _logical_xor, "^")
+
+    def __rxor__(self, other: Any) -> Selector:
+        return _make_binary_op(other, self, _logical_xor, "^")
+
+    def __invert__(self) -> Selector:
+        return NotSelector(self)
+
+
+def _check_selector(
+    x: Any, axis: Union[int, str] = "columns", level: Optional[int] = None
+) -> IndexSelector:
+    if not isinstance(x, IndexSelector):
+        return Exact(x, axis=axis, level=level)
+    return x
+
+
+def _make_binary_op(
+    left: IndexSelector,
+    right: Any,
+    op: Callable[[pd.Index, pd.Index], pd.Index],
+    op_name: str,
+) -> BinarySelector:
+    left = _check_selector(left)
+    right = _check_selector(right, left.axis, left.level)
+    if left.axis != right.axis:
+        raise ValueError(f"{left} and {right} must target the same axis.")
+    return BinarySelector(left, right, op, op_name)
+
+
+def _logical_and(left: pd.Index, right: pd.Index) -> pd.Index:
+    return left.intersection(right, sort=False)
+
+
+def _logical_or(left: pd.Index, right: pd.Index) -> pd.Index:
+    return left.union(right, sort=False)
+
+
+def _logical_xor(left: pd.Index, right: pd.Index) -> pd.Index:
+    return left.symmetric_difference(right, sort=False)
+
+
+class NotSelector(IndexSelector):
+    def __init__(self, sel: IndexSelector):
+        super().__init__(sel.axis, sel.level)
+        self.sel = sel
+
+    def _get_index_mask(self, index: pd.Index, values) -> np.ndarray:  # type: ignore
+        return ~index.isin(values)
+
+    def select(self, df: pd.DataFrame) -> pd.Index:
+        values = self.sel.select(df)
+        index = df._get_axis(self.axis)
+        level = index.get_level_values(self.level)
+        return index[self._get_index_mask(level, values)]
 
 
 class Exact(IndexSelector):
