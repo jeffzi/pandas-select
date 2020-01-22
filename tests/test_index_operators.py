@@ -11,19 +11,6 @@ from .utils import assert_col_indexer, assert_row_indexer, pp_param
     "op, left, right, expected",
     [
         # and
-        pp_param(operator.or_, ["int", "int"], ["int"], ["int", "int"])
-    ],
-)
-def test_x(df, op, left, right, expected):
-    assert_col_indexer(df, op(Exact(left), right), expected)
-    assert_col_indexer(df, op(left, Exact(right)), expected)
-    assert_col_indexer(df, op(Exact(left), right), expected)
-
-
-@pytest.mark.parametrize(
-    "op, left, right, expected",
-    [
-        # and
         pp_param(operator.and_, "int", "int", ["int"]),
         pp_param(operator.and_, "int", "float", []),
         pp_param(operator.and_, ["int", "float"], "int", ["int"]),
