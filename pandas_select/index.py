@@ -1,5 +1,6 @@
 from abc import abstractmethod
-from typing import Any, List, Optional, Sequence, Tuple, Union
+from collections import Counter
+from typing import Any, Iterable, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
 import pandas as pd
@@ -40,6 +41,13 @@ class Exact(IndexSelector):
     ):
         super().__init__(axis, level)
         self.values = to_list(values)
+        self._check_duplicates(self.values)
+
+    @staticmethod
+    def _check_duplicates(values: Iterable) -> None:
+        dups = [x for x, cnt in Counter(values).items() if cnt > 1]
+        if dups:
+            raise ValueError(f"Found duplicated values: {dups}")
 
     def _get_index_mask_from_unique(self, index: pd.Index) -> np.ndarray:
         indexer = index.get_indexer(self.values)

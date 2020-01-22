@@ -96,13 +96,6 @@ def test_exact_not_found(df_mi):
                 df_mi[Exact("invalid", axis=axis, level=level)]
 
 
-def test_exact_col_duplicates(df):
-    df = pd.DataFrame([[0, 0, 0]], columns=["a", "a", "b"])
-    selector = Exact("a")
-    assert_frame_equal(df[selector], df[["a", "a"]])
-    assert df.loc[:, selector].columns.tolist() == ["a", "a", "a", "a"]
-
-
 def test_exact_row_duplicates(df):
     df = pd.DataFrame([0, 0], columns=["col"], index=["a", "a"])
     selector = Exact("a", axis=0)
@@ -142,6 +135,11 @@ def test_exact_col_multi_index(df_mi, level, cols, expected):
 )
 def test_exact_row_multi_index(df_mi, level, cols, expected):
     assert_row_indexer(df_mi, Exact(cols, axis=0, level=level), expected)
+
+
+def test_exact_duplicate_values():
+    with pytest.raises(ValueError):
+        Exact(["A", "A"])
 
 
 # ##############################  OneOf  ##############################
