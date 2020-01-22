@@ -3,7 +3,7 @@ import pytest
 
 from pandas.testing import assert_frame_equal
 
-from pandas_select.index import Exact, OneOf
+from pandas_select.index import Everything, Exact, OneOf
 
 from .utils import assert_col_indexer, assert_row_indexer, pp_param
 
@@ -177,3 +177,21 @@ def test_one_of_col_multi_index(df_mi, level, cols, expected):
 )
 def test_one_of_row_multi_index(df_mi, level, cols, expected):
     assert_row_indexer(df_mi, OneOf(cols, axis=0, level=level), expected)
+
+
+# ##############################  Everything  ##############################
+
+
+def test_everything(df_mi):
+    assert_row_indexer(df_mi, Everything(axis=0), [("A", 0), ("A", 1)])
+    assert_col_indexer(
+        df_mi,
+        Everything(axis=1),
+        [
+            ("int", "number"),
+            ("float", "number"),
+            ("category", "nominal"),
+            ("category", "ordinal"),
+            ("string", "nominal"),
+        ],
+    )

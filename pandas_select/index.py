@@ -163,3 +163,11 @@ class OneOf(IndexSelector):
 
     def _get_index_mask(self, index: pd.Index) -> np.ndarray:
         return index.isin(self.values)
+
+
+class Everything(IndexSelector):
+    def __init__(self, axis: Union[int, str] = "columns"):
+        super().__init__(axis, None)
+
+    def _get_index_mask(self, index: pd.Index) -> np.ndarray:
+        return np.arange(0, index.size)
