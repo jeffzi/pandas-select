@@ -1,4 +1,3 @@
-from abc import abstractmethod
 from collections import Counter
 from typing import Any, Callable, Iterable, List, Optional, Sequence, Tuple, Union
 
@@ -19,7 +18,6 @@ class IndexSelector(Selector):
         self.axis = axis
         self.level = level
 
-    @abstractmethod
     def _get_index_mask(self, index: pd.Index) -> IndexMaskValues:
         raise NotImplementedError()
 
