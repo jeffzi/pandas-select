@@ -3,7 +3,15 @@ import pytest
 
 from pandas.testing import assert_frame_equal
 
-from pandas_select.index import Everything, Exact, OneOf
+from pandas_select.index import (
+    Contains,
+    EndsWith,
+    Everything,
+    Exact,
+    Match,
+    OneOf,
+    StartsWith,
+)
 
 from .utils import assert_col_indexer, assert_row_indexer, pp_param
 
@@ -181,4 +189,65 @@ def test_everything(df_mi):
             ("category", "nominal"),
             ("string", "nominal"),
         ],
+    )
+
+
+# ##############################  Pandas str  ##############################
+
+
+@pytest.fixture
+def df_pattern_lower():
+    return pd.DataFrame({"a": [1, 2], "b": [1, 2], "a__b_d1": [1, 2]})
+
+
+@pytest.fixture
+def df_pattern_upper():
+    return pd.DataFrame({"A": [1, 2], "B": [1, 2], "A__b_d1": [1, 2]})
+
+
+def test_startswith(df_pattern_lower):
+    assert_col_indexer(df_pattern_lower, StartsWith("a"), ["a", "a__b_d1"])
+
+
+def test_startswith_case(df_pattern_lower, df_pattern_upper):
+    assert_col_indexer(
+        df_pattern_lower, StartsWith("A", ignore_case=True), ["a", "a__b_d1"]
+    )
+    assert_col_indexer(
+        df_pattern_upper, StartsWith("a", ignore_case=True), ["A", "A__b_d1"]
+    )
+
+
+def test_endswith(df_pattern_lower):
+    assert_col_indexer(df_pattern_lower, EndsWith("1"), ["a__b_d1"])
+
+
+def test_endswith_case(df_pattern_lower, df_pattern_upper):
+    assert_col_indexer(df_pattern_lower, EndsWith("B", ignore_case=True), ["b"])
+    assert_col_indexer(df_pattern_upper, EndsWith("b", ignore_case=True), ["B"])
+
+
+def test_contains(df_pattern_lower):
+    assert_col_indexer(df_pattern_lower, Contains("b"), ["b", "a__b_d1"])
+
+
+def test_contains_case(df_pattern_lower, df_pattern_upper):
+    assert_col_indexer(
+        df_pattern_lower, Contains("B", ignore_case=True), ["b", "a__b_d1"]
+    )
+    assert_col_indexer(
+        df_pattern_upper, Contains("b", ignore_case=True), ["B", "A__b_d1"]
+    )
+
+
+def test_match(df_pattern_lower):
+    assert_col_indexer(df_pattern_lower, Match(".*_d[0-9]{1}"), ["a__b_d1"])
+
+
+def test_match_case(df_pattern_lower, df_pattern_upper):
+    assert_col_indexer(
+        df_pattern_lower, Match(".*_D[0-9]{1}", ignore_case=True), ["a__b_d1"]
+    )
+    assert_col_indexer(
+        df_pattern_upper, Match(".*_d[0-9]{1}", ignore_case=True), ["A__b_d1"]
     )

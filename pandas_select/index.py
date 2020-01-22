@@ -172,3 +172,73 @@ class Everything(IndexSelector):
 
     def _get_index_mask(self, index: pd.Index) -> np.ndarray:
         return np.arange(0, index.size)
+
+
+class _PandasStr(IndexSelector):
+    def __init__(
+        self,
+        func: Callable[[Sequence[str], str], Sequence[bool]],
+        match: str,
+        ignore_case: bool = False,
+        axis: Union[int, str] = "columns",
+        level: Optional[int] = None,
+    ):
+        super().__init__(axis, level)
+        self.func = func
+        self.match = match
+        self.ignore_case = ignore_case
+
+    def _get_index_mask(self, index: pd.Index) -> np.ndarray:
+        if self.ignore_case:
+            match = self.match.lower()
+            cols = index.str.lower()
+        else:
+            match = self.match
+            cols = index.values
+        return self.func(cols, match)
+
+
+class StartsWith(_PandasStr):
+    def __init__(
+        self,
+        match: str,
+        ignore_case: bool = False,
+        axis: Union[int, str] = "columns",
+        level: Optional[int] = None,
+    ):
+        super().__init__(
+            pd.core.strings.str_startswith, match, ignore_case, axis, level
+        )
+
+
+class EndsWith(_PandasStr):
+    def __init__(
+        self,
+        match: str,
+        ignore_case: bool = False,
+        axis: Union[int, str] = "columns",
+        level: Optional[int] = None,
+    ):
+        super().__init__(pd.core.strings.str_endswith, match, ignore_case, axis, level)
+
+
+class Contains(_PandasStr):
+    def __init__(
+        self,
+        match: str,
+        ignore_case: bool = False,
+        axis: Union[int, str] = "columns",
+        level: Optional[int] = None,
+    ):
+        super().__init__(pd.core.strings.str_contains, match, ignore_case, axis, level)
+
+
+class Match(_PandasStr):
+    def __init__(
+        self,
+        match: str,
+        ignore_case: bool = False,
+        axis: Union[int, str] = "columns",
+        level: Optional[int] = None,
+    ):
+        super().__init__(pd.core.strings.str_match, match, ignore_case, axis, level)
