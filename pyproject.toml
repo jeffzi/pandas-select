@@ -19,7 +19,6 @@ flake8 = ">=3.7.9"
 flake8-bugbear = ">=19.8.0"
 pytest = ">=5.0.0"
 mypy = "^0.761"
-flake8-mypy = ">=17.8.0"
 
 [tool.black]
 line-length = 88
