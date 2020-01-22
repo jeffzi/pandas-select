@@ -42,7 +42,7 @@ def test_col_binary_op(df, op, left, right, expected):
 
 
 def test_col_not_op(df):
-    assert_col_indexer(df, ~Exact("int"), ["float", "category", "ordinal", "string"])
+    assert_col_indexer(df, ~Exact("int"), ["float", "category", "string"])
 
 
 @pytest.mark.parametrize(

@@ -55,11 +55,7 @@ def test_exact_row_duplicates(df):
         ),
         pp_param(0, ["int"], [("int", "number")]),
         pp_param(0, ["int", "float"], [("int", "number"), ("float", "number")]),
-        pp_param(
-            1,
-            ["ordinal", "nominal"],
-            [("category", "nominal"), ("category", "ordinal"), ("string", "nominal")],
-        ),
+        pp_param(1, ["nominal"], [("category", "nominal"), ("string", "nominal")],),
     ],
 )
 def test_exact_col_multi_index(df_mi, level, cols, expected):
@@ -147,16 +143,8 @@ def test_one_of_row(df, cols, expected):
         pp_param(0, ["int", "float"], [("int", "number"), ("float", "number")]),
         pp_param(0, ["float", "int"], [("int", "number"), ("float", "number")]),
         pp_param(0, [99], []),
-        pp_param(
-            1,
-            ["ordinal", "nominal"],
-            [("category", "nominal"), ("category", "ordinal"), ("string", "nominal")],
-        ),
-        pp_param(
-            1,
-            ["nominal", "ordinal"],
-            [("category", "nominal"), ("category", "ordinal"), ("string", "nominal")],
-        ),
+        pp_param(1, ["nominal"], [("category", "nominal"), ("string", "nominal")],),
+        pp_param(1, ["nominal"], [("category", "nominal"), ("string", "nominal")],),
         pp_param(1, [99], []),
     ],
 )
@@ -191,7 +179,6 @@ def test_everything(df_mi):
             ("int", "number"),
             ("float", "number"),
             ("category", "nominal"),
-            ("category", "ordinal"),
             ("string", "nominal"),
         ],
     )
