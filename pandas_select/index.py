@@ -36,7 +36,7 @@ class Exact(IndexSelector):
         self,
         values: Union[Any, List],
         axis: Union[int, str] = "columns",
-        level: int = 0,
+        level: Optional[int] = None,
     ):
         super().__init__(axis, level)
         self.values = to_list(values)
