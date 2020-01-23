@@ -20,4 +20,7 @@ class AllNumeric(HasDtype):
 
 class AllNominal(HasDtype):
     def __init__(self) -> None:
-        super().__init__(["category", "object"])
+        dtypes = ["category", "object"]
+        if pd.__version__ >= "1.0.0":
+            dtypes.append("string")
+        super().__init__(dtypes)
