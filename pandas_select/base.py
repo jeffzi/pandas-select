@@ -1,7 +1,7 @@
 import inspect
 
 from abc import ABC, abstractmethod
-from typing import Callable, List, Optional, Sequence
+from typing import Any, Callable, List, Optional, Sequence
 
 import pandas as pd
 
@@ -59,5 +59,13 @@ class LogicalOp(Selector, ABC):
             args.append(self.right(df))
         return self.op(*args)
 
+    def _pretty_format(self, fmt: Callable[[Any], str]) -> str:
+        if self.right is None:
+            return f"{fmt(self.op_name)}{fmt(self.left)}"
+        return f"{fmt(self.left)} {self.op_name} {fmt(self.right)}"
+
     def __repr__(self) -> str:
-        return f"{self.left} {self.op_name} {self.right}"
+        return self._pretty_format(repr)
+
+    def __str__(self) -> str:
+        return self._pretty_format(str)
