@@ -1,3 +1,5 @@
+import operator
+
 import pandas as pd
 import pytest
 
@@ -41,25 +43,30 @@ def test_everywhere_empty(where_df):
     assert where_df[selector].empty
 
 
-def test_where_and(where_df):
-    a = Anywhere(lambda x: x == -1)
-    b = Everywhere(lambda x: x < 0)
-    assert_frame_equal(where_df.loc[["neg"]], where_df[a & b])
-    assert_frame_equal(where_df.loc[["neg"]], where_df[b & a])
+@pytest.mark.parametrize(
+    "op, expected",
+    [
+        (operator.and_, ["neg"]),
+        (operator.or_, ["neg", "mixed"]),
+        (operator.xor, ["mixed"]),
+    ],
+)
+def test_where_binary_op(where_df, op, expected):
+    left = Anywhere(lambda x: x == -1)
+    right = Everywhere(lambda x: x < 0)
+    assert_frame_equal(where_df.loc[expected], where_df[op(left, right)])
+    assert_frame_equal(where_df.loc[expected], where_df[op(right, left)])
 
 
-def test_where_or(where_df):
-    a = Anywhere(lambda x: x == -1)
-    b = Everywhere(lambda x: x < 0)
-    assert_frame_equal(where_df.loc[["neg", "mixed"]], where_df[a | b])
-    assert_frame_equal(where_df.loc[["neg", "mixed"]], where_df[b | a])
-
-
-def test_where_xor(where_df):
-    a = Anywhere(lambda x: x == -1)
-    b = Everywhere(lambda x: x < 0)
-    assert_frame_equal(where_df.loc[["mixed"]], where_df[a ^ b])
-    assert_frame_equal(where_df.loc[["mixed"]], where_df[b ^ a])
+@pytest.mark.parametrize(
+    "op, expected",
+    [(operator.and_, []), (operator.or_, ["pos"]), (operator.xor, ["pos"])],
+)
+def test_where_binary_op_empty_operand(where_df, op, expected):
+    left = Anywhere(lambda x: x > 99)
+    right = Everywhere(lambda x: x > 0)
+    assert_frame_equal(where_df.loc[expected], where_df[op(left, right)])
+    assert_frame_equal(where_df.loc[expected], where_df[op(right, left)])
 
 
 def test_where_not(where_df):
@@ -69,28 +76,7 @@ def test_where_not(where_df):
     assert_frame_equal(where_df, where_df[~selector])
 
 
-def test_where_and_empty(where_df):
-    a = Anywhere(lambda x: x > 99)
-    b = Everywhere(lambda x: x > 0)
-    assert where_df[a & b].empty
-    assert where_df[b & a].empty
-
-
-def test_where_or_empty(where_df):
-    a = Anywhere(lambda x: x > 99)
-    b = Everywhere(lambda x: x > 0)
-    assert_frame_equal(where_df.loc[["pos"]], where_df[a | b])
-    assert_frame_equal(where_df.loc[["pos"]], where_df[b | a])
-
-
-def test_where_xor_empty(where_df):
-    a = Anywhere(lambda x: x > 99)
-    b = Everywhere(lambda x: x > 0)
-    assert_frame_equal(where_df.loc[["pos"]], where_df[a ^ b])
-    assert_frame_equal(where_df.loc[["pos"]], where_df[b ^ a])
-
-
-def test_where_not_empty(where_df):
+def test_where_not_empty_operand(where_df):
     selector = Anywhere(lambda x: x < 99)
     assert where_df[~selector].empty
 
