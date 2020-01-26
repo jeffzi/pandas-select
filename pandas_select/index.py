@@ -1,19 +1,18 @@
+from abc import ABC
 from collections import Counter
-from typing import Any, Callable, Iterable, List, Optional, Sequence, Tuple, Union
+from typing import Any, Callable, Iterable, List, Optional, Sequence, Set, Tuple, Union
 
 import numpy as np
 import pandas as pd
 
-from .base import BinarySelector, Selector
+from .base import LogicalOp, Selector
 from .utils import to_list
 
 
-IndexMaskValues = Union[
-    Sequence[int], Sequence[bool], Sequence[str], Sequence[Tuple[Any]]
-]
+IndexMaskValues = Union[Sequence[int], Sequence[bool], Sequence[str], Sequence[Tuple]]
 
 
-class IndexSelector(Selector):
+class IndexerMixin(Selector, ABC):
     def __init__(self, axis: Union[int, str] = "columns", level: Optional[int] = None):
         self.axis = axis
         self.level = level
@@ -29,50 +28,35 @@ class IndexSelector(Selector):
             level = index
         return index[self._get_index_mask(level)]
 
-    def __and__(self, other: Any) -> Selector:
-        return _make_binary_op(self, other, _logical_and, "&")
 
-    def __rand__(self, other: Any) -> Selector:
-        return _make_binary_op(other, self, _logical_and, "&")
+def _logical_and_multi_index(
+    left: pd.MultiIndex, right: pd.MultiIndex
+) -> pd.MultiIndex:
+    if left.equals(right):
+        return left
 
-    def __or__(self, other: Any) -> Selector:
-        return _make_binary_op(self, other, _logical_or, "|")
+    result_names = left.names if left.names == right.names else None
 
-    def __ror__(self, other: Any) -> Selector:
-        return _make_binary_op(other, self, _logical_or, "|")
+    unique_right = set(right.values)
+    seen: Set[Tuple] = set()
+    unique_tuples = [
+        x for x in left if x in unique_right and not (x in seen or seen.add(x))  # type: ignore
+    ]
 
-    def __xor__(self, other: Any) -> Selector:
-        return _make_binary_op(self, other, _logical_xor, "^")
-
-    def __rxor__(self, other: Any) -> Selector:
-        return _make_binary_op(other, self, _logical_xor, "^")
-
-    def __invert__(self) -> Selector:
-        return NotSelector(self)
-
-
-def _check_selector(
-    x: Any, axis: Union[int, str] = "columns", level: Optional[int] = None
-) -> IndexSelector:
-    if not isinstance(x, IndexSelector):
-        return Exact(x, axis=axis, level=level)
-    return x
-
-
-def _make_binary_op(
-    left: IndexSelector,
-    right: Any,
-    op: Callable[[pd.Index, pd.Index], pd.Index],
-    op_name: str,
-) -> BinarySelector:
-    left = _check_selector(left)
-    right = _check_selector(right, left.axis, left.level)
-    if left.axis != right.axis:
-        raise ValueError(f"{left} and {right} must target the same axis.")
-    return BinarySelector(left, right, op, op_name)
+    if len(unique_tuples) == 0:
+        return pd.MultiIndex(
+            levels=left.levels,
+            codes=[[]] * left.nlevels,
+            names=result_names,
+            verify_integrity=False,
+        )
+    return pd.MultiIndex.from_tuples(unique_tuples, sortorder=0, names=result_names)
 
 
 def _logical_and(left: pd.Index, right: pd.Index) -> pd.Index:
+    if isinstance(left, pd.MultiIndex) and isinstance(right, pd.MultiIndex):
+        # pandas.MultiIndex.intersection(..., sort=False) does not preserve order
+        return _logical_and_multi_index(left, right)
     return left.intersection(right, sort=False)
 
 
@@ -84,22 +68,88 @@ def _logical_xor(left: pd.Index, right: pd.Index) -> pd.Index:
     return left.symmetric_difference(right, sort=False)
 
 
-class NotSelector(IndexSelector):
-    def __init__(self, sel: IndexSelector):
-        super().__init__(sel.axis, sel.level)
-        self.sel = sel
+class IndexerOpsMixin:
+    """ Common logical operators mixin """
 
-    def _get_index_mask(self, index: pd.Index, values) -> np.ndarray:  # type: ignore
-        return ~index.isin(values)
+    @staticmethod
+    def _check_selector(
+        x: Any, axis: Union[int, str] = "columns", level: Optional[int] = None
+    ) -> IndexerMixin:
+        if not isinstance(x, IndexerOpsMixin):
+            return Exact(x, axis=axis, level=level)
+        return x  # type:ignore
+
+    @staticmethod
+    def _make_binary_op(
+        left: IndexerMixin,
+        right: Any,
+        op: Callable[[pd.Index, pd.Index], pd.Index],
+        op_name: str,
+    ) -> "IndexerOp":
+        left = IndexerOpsMixin._check_selector(left)
+        right = IndexerOpsMixin._check_selector(
+            right, getattr(left, "axis", "columns"), getattr(left, "level", None)
+        )
+        if left.axis != right.axis:
+            raise ValueError(f"{left} and {right} must target the same axis.")
+        return IndexerOp(op, op_name, left, right, left.axis)
+
+    def __and__(self, other: Any) -> "IndexerOp":
+        return self._make_binary_op(self, other, _logical_and, "&")  # type:ignore
+
+    def __rand__(self, other: Any) -> "IndexerOp":
+        return self._make_binary_op(other, self, _logical_and, "&")
+
+    def __or__(self, other: Any) -> "IndexerOp":
+        return self._make_binary_op(self, other, _logical_or, "|")  # type:ignore
+
+    def __ror__(self, other: Any) -> "IndexerOp":
+        return self._make_binary_op(other, self, _logical_or, "|")
+
+    def __xor__(self, other: Any) -> "IndexerOp":
+        return self._make_binary_op(self, other, _logical_xor, "^")  # type:ignore
+
+    def __rxor__(self, other: Any) -> "IndexerOp":
+        return self._make_binary_op(other, self, _logical_xor, "^")
+
+    def __invert__(self) -> "IndexerOp":
+        return NotSelector(self)  # type:ignore
+
+
+class IndexerOp(LogicalOp, IndexerOpsMixin):
+    def __init__(
+        self,
+        op: Callable[[Sequence, Optional[Sequence]], Sequence],
+        op_name: str,
+        left: "IndexerMixin",
+        right: Optional["Indexer"] = None,
+        axis: Union[int, str] = "columns",
+    ):
+        super().__init__(op, op_name, left, right)
+        self.axis = axis
+
+
+class Indexer(IndexerMixin, IndexerOpsMixin, ABC):
+    pass
+
+
+class NotSelector(IndexerOp):
+    def __init__(self, selector: Indexer):
+        super().__init__(np.logical_not, "~", selector)
+        self.axis = selector.axis
+        self.level = selector.level
 
     def select(self, df: pd.DataFrame) -> pd.Index:
-        values = self.sel.select(df)
         index = df._get_axis(self.axis)
-        level = index.get_level_values(self.level)
-        return index[self._get_index_mask(level, values)]
+        if self.level is not None:
+            level_index = index.get_level_values(self.level)
+        else:
+            level_index = index
+        values = self.left(df).get_level_values(self.level)  # type:ignore
+        return index[~level_index.isin(values)]
 
 
-class Exact(IndexSelector):
+class Exact(Indexer):
     def __init__(
         self,
         values: Union[Any, List],
@@ -152,7 +202,7 @@ class Exact(IndexSelector):
         return locs
 
 
-class OneOf(IndexSelector):
+class OneOf(Indexer):
     def __init__(
         self,
         values: List[Any],
@@ -166,7 +216,7 @@ class OneOf(IndexSelector):
         return index.isin(self.values)
 
 
-class Everything(IndexSelector):
+class Everything(Indexer):
     def __init__(self, axis: Union[int, str] = "columns"):
         super().__init__(axis, None)
 
@@ -174,10 +224,10 @@ class Everything(IndexSelector):
         return np.arange(0, index.size)
 
 
-class _PandasStr(IndexSelector):
+class _PandasStr(Indexer):
     def __init__(
         self,
-        func: Callable[[Sequence[str], str], Sequence[bool]],
+        func: Callable[[np.ndarray, str], np.ndarray],
         match: str,
         ignore_case: bool = False,
         axis: Union[int, str] = "columns",
