@@ -10,7 +10,8 @@ class HasDtype(Indexer):
         self.dtypes = to_list(dtypes)
 
     def select(self, df: pd.DataFrame) -> pd.Index:
-        return df.select_dtypes(self.dtypes).columns
+        df_row = df.iloc[:1]
+        return df_row.select_dtypes(self.dtypes).columns
 
 
 class AllNumeric(HasDtype):
