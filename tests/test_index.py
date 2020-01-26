@@ -168,7 +168,7 @@ def test_exact_duplicate_values():
     ],
 )
 def test_col_binary_op(df, op, left, right, expected):
-    assert_col_indexer(df, op(Exact(left), right), expected)
+    assert_col_indexer(df, op(Exact(left), Exact(right)), expected)
     assert_col_indexer(df, op(left, Exact(right)), expected)
     assert_col_indexer(df, op(Exact(left), right), expected)
 
