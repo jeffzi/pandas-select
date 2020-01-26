@@ -146,7 +146,6 @@ def test_exact_duplicate_values():
         pp_param(operator.and_, "int", "int", ["int"]),
         pp_param(operator.and_, "int", "float", []),
         pp_param(operator.and_, ["int", "float"], "int", ["int"]),
-        pp_param(operator.and_, ["int", "float"], "float", ["float"]),
         pp_param(operator.and_, ["int", "float"], ["float", "int"], ["int", "float"]),
         pp_param(operator.and_, ["float", "int"], ["int", "float"], ["float", "int"]),
         # or
@@ -155,6 +154,12 @@ def test_exact_duplicate_values():
         pp_param(operator.or_, ["int", "float"], "int", ["int", "float"]),
         pp_param(operator.or_, ["int", "float"], ["float", "int"], ["int", "float"]),
         pp_param(operator.or_, ["float", "int"], ["int", "float"], ["float", "int"]),
+        # difference
+        pp_param(operator.sub, "int", "int", []),
+        pp_param(operator.sub, "int", "float", ["int"]),
+        pp_param(operator.sub, ["int", "float"], "int", ["float"]),
+        pp_param(operator.sub, ["int", "float"], ["float", "int"], []),
+        pp_param(operator.sub, ["float", "int"], ["int", "float"], []),
         # xor
         pp_param(operator.xor, "int", "int", []),
         pp_param(operator.xor, "int", "float", ["int", "float"]),

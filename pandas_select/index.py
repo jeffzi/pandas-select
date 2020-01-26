@@ -64,6 +64,9 @@ def _union(left: pd.Index, right: pd.Index) -> pd.Index:
     return left.union(right, sort=False)
 
 
+def _difference(left: pd.Index, right: pd.Index) -> pd.Index:
+    return left.difference(right, sort=False)
+
 
 def _symmetric_difference(left: pd.Index, right: pd.Index) -> pd.Index:
     return left.symmetric_difference(right, sort=False)
@@ -100,6 +103,10 @@ class IndexerOpsMixin:
 
     def union(self, other: Any) -> "IndexerOp":
         return self._make_binary_op(self, other, _union, "|")  # type:ignore
+
+    def difference(self, other: Any) -> "IndexerOp":
+        return self._make_binary_op(self, other, _difference, "-")  # type:ignore
+
     def symmetric_difference(self, other: Any) -> "IndexerOp":
         return self._make_binary_op(
             self, other, _symmetric_difference, "^"  # type:ignore
@@ -116,6 +123,12 @@ class IndexerOpsMixin:
 
     def __ror__(self, other: Any) -> "IndexerOp":
         return self._make_binary_op(other, self, _union, "|")
+
+    def __sub__(self, other: Any) -> "IndexerOp":
+        return self.difference(other)
+
+    def __rsub__(self, other: Any) -> "IndexerOp":
+        return self._make_binary_op(other, self, _difference, "-")
 
     def __xor__(self, other: Any) -> "IndexerOp":
         return self.symmetric_difference(other)
