@@ -1,3 +1,5 @@
+__version__ = "0.1.1"
+
 from .column import AllNominal, AllNumeric, HasDtype
 from .index import Contains, EndsWith, Everything, Exact, Match, OneOf, StartsWith
 from .where import Anywhere, Everywhere
