@@ -93,3 +93,12 @@ def test_where_xor_empty(where_df):
 def test_where_not_empty(where_df):
     selector = Anywhere(lambda x: x < 99)
     assert where_df[~selector].empty
+
+
+def test_multiple_operators(where_df):
+    all_pos = Everywhere(lambda x: x > 0)
+    any_gt_99 = Everywhere(lambda x: x > 99)
+    any_pos = Anywhere(lambda x: x == 1)
+
+    actual = where_df[~all_pos & any_pos | any_gt_99]
+    assert_frame_equal(where_df.loc[["mixed"]], actual)
