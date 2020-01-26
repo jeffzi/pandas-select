@@ -1,7 +1,7 @@
 import inspect
 
 from abc import ABC, abstractmethod
-from typing import Callable, List, Sequence
+from typing import Callable, List, Optional, Sequence
 
 import pandas as pd
 
@@ -40,13 +40,13 @@ class Selector(ABC):
         return self._format(args)
 
 
-class BinarySelector(Selector, ABC):
+class LogicalOp(Selector, ABC):
     def __init__(
         self,
-        left: Selector,
-        right: Selector,
-        op: Callable[[Sequence, Sequence], Sequence],
+        op: Callable[[Sequence, Optional[Sequence]], Sequence],
         op_name: str,
+        left: Selector,
+        right: Optional[Selector] = None,
     ):
         self.op = op
         self.op_name = op_name
@@ -54,7 +54,10 @@ class BinarySelector(Selector, ABC):
         self.right = right
 
     def select(self, df: pd.DataFrame) -> Sequence:
-        return self.op(self.left(df), self.right(df))
+        args = [self.left(df)]
+        if self.right is not None:
+            args.append(self.right(df))
+        return self.op(*args)
 
     def __repr__(self) -> str:
         return f"{self.left} {self.op_name} {self.right}"
