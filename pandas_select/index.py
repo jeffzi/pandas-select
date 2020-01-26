@@ -53,18 +53,19 @@ def _logical_and_multi_index(
     return pd.MultiIndex.from_tuples(unique_tuples, sortorder=0, names=result_names)
 
 
-def _logical_and(left: pd.Index, right: pd.Index) -> pd.Index:
+def _intersection(left: pd.Index, right: pd.Index) -> pd.Index:
     if isinstance(left, pd.MultiIndex) and isinstance(right, pd.MultiIndex):
         # pandas.MultiIndex.intersection(..., sort=False) does not preserve order
         return _logical_and_multi_index(left, right)
     return left.intersection(right, sort=False)
 
 
-def _logical_or(left: pd.Index, right: pd.Index) -> pd.Index:
+def _union(left: pd.Index, right: pd.Index) -> pd.Index:
     return left.union(right, sort=False)
 
 
-def _logical_xor(left: pd.Index, right: pd.Index) -> pd.Index:
+
+def _symmetric_difference(left: pd.Index, right: pd.Index) -> pd.Index:
     return left.symmetric_difference(right, sort=False)
 
 
@@ -94,23 +95,33 @@ class IndexerOpsMixin:
             raise ValueError(f"{left} and {right} must target the same axis.")
         return IndexerOp(op, op_name, left, right, left.axis)
 
+    def intersection(self, other: Any) -> "IndexerOp":
+        return self._make_binary_op(self, other, _intersection, "&")  # type:ignore
+
+    def union(self, other: Any) -> "IndexerOp":
+        return self._make_binary_op(self, other, _union, "|")  # type:ignore
+    def symmetric_difference(self, other: Any) -> "IndexerOp":
+        return self._make_binary_op(
+            self, other, _symmetric_difference, "^"  # type:ignore
+        )
+
     def __and__(self, other: Any) -> "IndexerOp":
-        return self._make_binary_op(self, other, _logical_and, "&")  # type:ignore
+        return self.intersection(other)
 
     def __rand__(self, other: Any) -> "IndexerOp":
-        return self._make_binary_op(other, self, _logical_and, "&")
+        return self._make_binary_op(other, self, _intersection, "&")
 
     def __or__(self, other: Any) -> "IndexerOp":
-        return self._make_binary_op(self, other, _logical_or, "|")  # type:ignore
+        return self.union(other)
 
     def __ror__(self, other: Any) -> "IndexerOp":
-        return self._make_binary_op(other, self, _logical_or, "|")
+        return self._make_binary_op(other, self, _union, "|")
 
     def __xor__(self, other: Any) -> "IndexerOp":
-        return self._make_binary_op(self, other, _logical_xor, "^")  # type:ignore
+        return self.symmetric_difference(other)
 
     def __rxor__(self, other: Any) -> "IndexerOp":
-        return self._make_binary_op(other, self, _logical_xor, "^")
+        return self._make_binary_op(other, self, _symmetric_difference, "^")
 
     def __invert__(self) -> "IndexerOp":
         return NotSelector(self)  # type:ignore
