@@ -19,6 +19,7 @@ flake8 = ">=3.7.9"
 flake8-bugbear = ">=19.8.0"
 pytest = ">=5.0.0"
 mypy = "^0.761"
+tox = ">=3.8.4"
 
 [tool.black]
 line-length = 88
@@ -53,3 +54,16 @@ use_parentheses=true
 
 known_first_party="pandas_select"
 known_third_party=["numpy", "pandas", "pytest"]
+
+[tool.tox]
+legacy_tox_ini = """
+[tox]
+isolated_build = true
+envlist = py36, py37, py38
+
+[testenv]
+whitelist_externals = poetry
+commands =
+    poetry install -v
+    poetry run pytest {posargs} tests/
+"""

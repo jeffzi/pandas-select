@@ -11,6 +11,7 @@ __pycache__/
 
 # Unit test / coverage reports
 .pytest_cache/
+.tox/
 
 # pyenv
 .python-version
