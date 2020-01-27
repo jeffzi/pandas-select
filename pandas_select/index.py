@@ -1,5 +1,6 @@
 from abc import ABC
 from collections import Counter
+from functools import partial
 from typing import Any, Callable, Iterable, List, Optional, Sequence, Set, Tuple, Union
 
 import numpy as np
@@ -252,67 +253,87 @@ class _PandasStr(Indexer):
     def __init__(
         self,
         func: Callable[[np.ndarray, str], np.ndarray],
-        match: str,
-        ignore_case: bool = False,
+        pat: str,
         axis: Union[int, str] = "columns",
         level: Optional[int] = None,
     ):
         super().__init__(axis, level)
         self.func = func
-        self.match = match
-        self.ignore_case = ignore_case
+        self.pat = pat
 
     def _get_index_mask(self, index: pd.Index) -> np.ndarray:
-        if self.ignore_case:
-            match = self.match.lower()
+        return self.func(index.values, self.pat)
+
+
+class _PandasStrCase(_PandasStr):
+    def __init__(
+        self,
+        func: Callable[[np.ndarray, str], np.ndarray],
+        pat: str,
+        case: bool = False,
+        axis: Union[int, str] = "columns",
+        level: Optional[int] = None,
+    ):
+        super().__init__(func, pat, axis, level)
+        self.case = case
+
+    def _get_index_mask(self, index: pd.Index) -> np.ndarray:
+        if self.case:
+            pat = self.pat.lower()
             cols = index.str.lower()
         else:
-            match = self.match
+            pat = self.pat
             cols = index.values
-        return self.func(cols, match)
+        return self.func(cols, pat)
 
 
-class StartsWith(_PandasStr):
+class StartsWith(_PandasStrCase):
     def __init__(
         self,
-        match: str,
-        ignore_case: bool = False,
+        pat: str,
+        case: bool = False,
         axis: Union[int, str] = "columns",
         level: Optional[int] = None,
     ):
-        super().__init__(
-            pd.core.strings.str_startswith, match, ignore_case, axis, level
-        )
+        super().__init__(pd.core.strings.str_startswith, pat, case, axis, level)
 
 
-class EndsWith(_PandasStr):
+class EndsWith(_PandasStrCase):
     def __init__(
         self,
-        match: str,
-        ignore_case: bool = False,
+        pat: str,
+        case: bool = False,
         axis: Union[int, str] = "columns",
         level: Optional[int] = None,
     ):
-        super().__init__(pd.core.strings.str_endswith, match, ignore_case, axis, level)
+        super().__init__(pd.core.strings.str_endswith, pat, case, axis, level)
 
 
 class Contains(_PandasStr):
     def __init__(
         self,
-        match: str,
-        ignore_case: bool = False,
+        pat: str,
+        case: bool = False,
+        flags: int = 0,
+        na: Any = np.nan,
+        regex: bool = True,
         axis: Union[int, str] = "columns",
         level: Optional[int] = None,
     ):
-        super().__init__(pd.core.strings.str_contains, match, ignore_case, axis, level)
+        func = partial(
+            pd.core.strings.str_contains, case=case, flags=flags, na=na, regex=regex
+        )
+        super().__init__(func, pat, axis, level)
 
 
 class Match(_PandasStr):
     def __init__(
         self,
-        match: str,
-        ignore_case: bool = False,
+        pat: str,
+        flags: int = 0,
+        na: Any = np.nan,
         axis: Union[int, str] = "columns",
         level: Optional[int] = None,
     ):
-        super().__init__(pd.core.strings.str_match, match, ignore_case, axis, level)
+        func = partial(pd.core.strings.str_match, flags=flags, na=na)
+        super().__init__(func, pat, axis, level)
