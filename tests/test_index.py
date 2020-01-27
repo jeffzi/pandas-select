@@ -94,11 +94,12 @@ def test_exact_not_found(df_mi):
                 df_mi[Exact("invalid", axis=axis, level=level)]
 
 
-def test_exact_row_duplicates(df):
-    df = pd.DataFrame([0, 0], columns=["col"], index=["a", "a"])
-    selector = Exact("a", axis=0)
-    assert_frame_equal(df.loc[selector], df.loc[["a", "a"]])
-    assert df.loc[selector].index.tolist() == ["a", "a", "a", "a"]
+@pytest.mark.parametrize("idx", [(["a", "a", "b"]), (["b", "a", "a"])])
+def test_exact_duplicates(idx):
+    df = pd.DataFrame([0, 0, 0], columns=["col"], index=idx)
+    selector = Exact(["a", "b"], axis=0)
+    with pytest.raises(RuntimeError):
+        assert_frame_equal(df.loc[selector], df.loc[["a", "a", "b"]])
 
 
 @pytest.mark.parametrize(
@@ -250,20 +251,6 @@ def test_multiple_row_operators(df_mi):
 )
 def test_one_of_col(df, cols, expected):
     assert_col_indexer(df, OneOf(cols), expected)
-
-
-def test_one_of_col_duplicates(df):
-    df = pd.DataFrame([[0, 0]], columns=["a", "a"])
-    selector = OneOf("a")
-    assert_frame_equal(df[selector], df[["a", "a"]])
-    assert df.loc[:, selector].columns.tolist() == ["a", "a", "a", "a"]
-
-
-def test_one_of_row_duplicates(df):
-    df = pd.DataFrame([0, 0], columns=["col"], index=["a", "a"])
-    selector = OneOf("a", axis=0)
-    assert_frame_equal(df.loc[selector], df.loc[["a", "a"]])
-    assert df.loc[selector].index.tolist() == ["a", "a", "a", "a"]
 
 
 @pytest.mark.parametrize(

@@ -27,7 +27,10 @@ class IndexerMixin(Selector, ABC):
             level = index.get_level_values(self.level)
         else:
             level = index
-        return index[self._get_index_mask(level)]
+        selected: pd.Index = index[self._get_index_mask(level)]
+        if selected.has_duplicates:
+            raise RuntimeError(f"Found duplicated values in selection")
+        return selected
 
 
 def _logical_and_multi_index(
@@ -189,7 +192,7 @@ class Exact(Indexer):
     def _check_duplicates(values: Iterable) -> None:
         dups = [x for x, cnt in Counter(values).items() if cnt > 1]
         if dups:
-            raise ValueError(f"Found duplicated values: {dups}")
+            raise ValueError(f"Found duplicated values")
 
     def _get_index_mask_from_unique(self, index: pd.Index) -> np.ndarray:
         indexer = index.get_indexer(self.values)
