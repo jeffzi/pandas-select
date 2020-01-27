@@ -1,19 +1,20 @@
 from abc import ABC, abstractmethod
-from typing import Any, Callable, List, Sequence, Union
+from typing import Any, Callable, List, Optional, Sequence, Union
 
 import numpy as np
 import pandas as pd
 
 from .base import LogicalOp, Selector
+from .utils import to_list
 
 
 Cond = Callable[[pd.Series], Sequence[bool]]
 
 
 class Where(Selector, ABC):
-    def __init__(self, cond: Cond, columns: Union[str, List[str]] = None):
+    def __init__(self, cond: Cond, columns: Optional[Union[str, List[str]]] = None):
         self.cond = cond
-        self.columns = columns
+        self.columns = to_list(columns) if columns is not None else columns
 
     @abstractmethod
     def _join(self, df: pd.DataFrame) -> Sequence[bool]:
