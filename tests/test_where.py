@@ -94,3 +94,15 @@ def test_multiple_operators(where_df):
 
     actual = where_df[~all_pos & any_pos | any_gt_99]
     assert_frame_equal(where_df.loc[["mixed"]], actual)
+
+
+def test_where_invalid_ops(where_df):
+    selector = Anywhere(lambda x: x > 99)
+    msg = "Input does not support logical operations."
+
+    with pytest.raises(TypeError, match=msg):
+        "a" & selector
+    with pytest.raises(TypeError, match=msg):
+        "a" | selector
+    with pytest.raises(TypeError, match=msg):
+        "a" ^ selector
