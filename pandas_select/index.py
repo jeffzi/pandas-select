@@ -206,22 +206,24 @@ class Exact(Indexer):
 
         if index.is_monotonic:
             # locs contains a mixture of slices and ints
-            indexer = []
+            indexer: List[int] = []
             for loc in locs:
-                indices = loc
                 if isinstance(loc, slice):
                     indices = np.arange(loc.start, loc.stop, loc.step)
-                indexer.append(indices)
+                    indexer.extend(indices)
+                else:
+                    indexer.append(loc)
             locs = np.ravel(indexer)
         else:
             # locs contains a mixture of boolean arrays and ints
             masks = []
             for loc in locs:
-                new_mask = loc
                 if isinstance(loc, int):
-                    new_mask = np.zeros(len(index), dtype=bool)
-                    new_mask[loc] = True
-                masks.append(new_mask)
+                    mask = np.zeros(len(index), dtype=bool)
+                    mask[loc] = True
+                else:
+                    mask = loc
+                masks.append(mask)
             locs = np.logical_or.reduce(masks)
 
         return locs

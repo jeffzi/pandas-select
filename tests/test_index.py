@@ -120,15 +120,16 @@ def test_exact_col_multi_index(df_mi, level, cols, expected):
 
 
 @pytest.mark.parametrize(
-    "level, cols, expected",
+    "level, rows, expected",
     [
         pp_param(None, ("A", 0), [("A", 0)]),
         pp_param(0, "A", [("A", 0), ("A", 1)]),
+        pp_param(1, [0, 1], [("A", 0), ("A", 1)]),
         pp_param(1, [1, 0], [("A", 1), ("A", 0)]),
     ],
 )
-def test_exact_row_multi_index(df_mi, level, cols, expected):
-    assert_row_indexer(df_mi, Exact(cols, axis=0, level=level), expected)
+def test_exact_row_multi_index(df_mi, level, rows, expected):
+    assert_row_indexer(df_mi, Exact(rows, axis=0, level=level), expected)
 
 
 def test_exact_duplicate_values():
