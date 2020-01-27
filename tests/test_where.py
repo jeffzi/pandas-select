@@ -23,8 +23,11 @@ def where_df():
 
 def test_anywhere(where_df):
     selector = Anywhere(lambda x: x < 0)
-    expected = where_df.loc[["neg", "mixed"]].copy()
-    assert_frame_equal(where_df[selector], expected)
+    assert_frame_equal(where_df[selector], where_df.loc[["neg", "mixed"]])
+
+    for cols in ["B", ["B"]]:
+        selector = Anywhere(lambda x: x < 0, columns=cols)
+        assert_frame_equal(where_df[selector], where_df.loc[["neg"]])
 
 
 def test_anywhere_empty(where_df):
@@ -34,8 +37,11 @@ def test_anywhere_empty(where_df):
 
 def test_everywhere(where_df):
     selector = Everywhere(lambda x: x > 0)
-    expected = where_df.loc[["pos"]].copy()
-    assert_frame_equal(where_df[selector], expected)
+    assert_frame_equal(where_df[selector], where_df.loc[["pos"]])
+
+    for cols in ["B", ["B"]]:
+        selector = Everywhere(lambda x: x > 0, columns=cols)
+        assert_frame_equal(where_df[selector], where_df.loc[["pos", "mixed"]])
 
 
 def test_everywhere_empty(where_df):
