@@ -14,10 +14,9 @@ class Selector(ABC):
     def __call__(self, df: pd.DataFrame) -> Sequence:
         return self.select(df)
 
-    def _format(self, args: List[str] = None) -> str:
-        pretty_cls = type(self).__name__
-        pretty_args = f"({', '.join(args)})" if args else ""
-        return pretty_cls + pretty_args
+    def _format(self, args: Optional[List[str]] = None) -> str:
+        pretty_args = ", ".join(args) if args else ""
+        return f"{ type(self).__name__}({pretty_args})"
 
     def __repr__(self) -> str:
         args = [
@@ -28,6 +27,7 @@ class Selector(ABC):
         return self._format(args)
 
     def __str__(self) -> str:
+        """ Same as generated repr but ignore attributes set to default """
         args = []
         for param_name, param in inspect.signature(self.__class__).parameters.items():
             try:
