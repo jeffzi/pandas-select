@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, Callable, List, Optional, Sequence, Union
+from typing import Any, Callable, Iterable, Optional, Sequence, Union
 
 import numpy as np
 import pandas as pd
@@ -12,7 +12,7 @@ Cond = Callable[[pd.Series], Sequence[bool]]
 
 
 class Where(Selector, ABC):
-    def __init__(self, cond: Cond, columns: Optional[Union[str, List[str]]] = None):
+    def __init__(self, cond: Cond, columns: Optional[Union[str, Iterable[str]]] = None):
         self.cond = cond
         self.columns = to_set(columns) if columns is not None else columns
 

@@ -1,18 +1,7 @@
 from abc import ABC
 from collections import Counter
 from functools import partial
-from typing import (
-    Any,
-    Callable,
-    Iterable,
-    List,
-    Optional,
-    Sequence,
-    Set,
-    Tuple,
-    Union,
-    cast,
-)
+from typing import Any, Callable, List, Optional, Sequence, Set, Tuple, Union, cast
 
 import numpy as np
 import pandas as pd
@@ -190,19 +179,20 @@ class NotSelector(IndexerOp):
 class Exact(Indexer):
     def __init__(
         self,
-        values: Union[Any, List],
+        values: Union[Any, Sequence],
         axis: Union[int, str] = "columns",
         level: Optional[int] = None,
     ):
         super().__init__(axis, level)
-        self.values = to_list(values)
-        self._check_duplicates(self.values)
+        self.values = self._validate_values(values)
 
     @staticmethod
-    def _check_duplicates(values: Iterable) -> None:
+    def _validate_values(values: Union[Any, Sequence]) -> Sequence:
+        values = to_list(values)
         dups = [x for x, cnt in Counter(values).items() if cnt > 1]
         if dups:
             raise ValueError(f"Found duplicated values")
+        return values
 
     def _get_index_mask_from_unique(self, index: pd.Index) -> np.ndarray:
         indexer = index.get_indexer(self.values)
