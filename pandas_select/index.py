@@ -15,8 +15,15 @@ IndexMaskValues = Union[Sequence[int], Sequence[bool], Sequence[str], Sequence[T
 
 class IndexerMixin(Selector, ABC):
     def __init__(self, axis: Union[int, str] = "columns", level: Optional[int] = None):
-        self.axis = axis
+        self.axis = IndexerMixin._validate_axis(axis)
         self.level = level
+
+    @staticmethod
+    def _validate_axis(axis: Union[int, str]) -> Union[int, str]:
+        allowed = [0, 1, "columns"]
+        if axis not in allowed:
+            raise ValueError(f"axis must be one of {allowed}.")
+        return axis
 
     def _get_index_mask(self, index: pd.Index) -> IndexMaskValues:
         raise NotImplementedError()
