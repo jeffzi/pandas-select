@@ -1,7 +1,18 @@
 from abc import ABC
 from collections import Counter
 from functools import partial
-from typing import Any, Callable, Iterable, List, Optional, Sequence, Set, Tuple, Union
+from typing import (
+    Any,
+    Callable,
+    Iterable,
+    List,
+    Optional,
+    Sequence,
+    Set,
+    Tuple,
+    Union,
+    cast,
+)
 
 import numpy as np
 import pandas as pd
@@ -86,66 +97,43 @@ def _symmetric_difference(left: pd.Index, right: pd.Index) -> pd.Index:
 class IndexerOpsMixin:
     """ Common logical operators mixin """
 
-    @staticmethod
-    def _check_selector(
-        x: Any, axis: Union[int, str] = "columns", level: Optional[int] = None
-    ) -> IndexerMixin:
-        if not isinstance(x, IndexerOpsMixin):
-            return Exact(x, axis=axis, level=level)
-        return x  # type:ignore
-
-    @staticmethod
-    def _make_binary_op(
-        left: IndexerMixin,
-        right: Any,
-        op: Callable[[pd.Index, pd.Index], pd.Index],
-        op_name: str,
-    ) -> "IndexerOp":
-        left = IndexerOpsMixin._check_selector(left)
-        right = IndexerOpsMixin._check_selector(
-            right, getattr(left, "axis", "columns"), getattr(left, "level", None)
-        )
-        if left.axis != right.axis:
-            raise ValueError(f"{left} and {right} must target the same axis.")
-        return IndexerOp(op, op_name, left, right, left.axis)
-
     def intersection(self, other: Any) -> "IndexerOp":
-        return self._make_binary_op(self, other, _intersection, "&")  # type:ignore
+        return IndexerOp(_intersection, "&", self, other)  # type:ignore
 
     def union(self, other: Any) -> "IndexerOp":
-        return self._make_binary_op(self, other, _union, "|")  # type:ignore
+        return IndexerOp(_union, "|", self, other)  # type:ignore
 
     def difference(self, other: Any) -> "IndexerOp":
-        return self._make_binary_op(self, other, _difference, "-")  # type:ignore
+        return IndexerOp(_difference, "-", self, other)  # type:ignore
 
     def symmetric_difference(self, other: Any) -> "IndexerOp":
-        return self._make_binary_op(
-            self, other, _symmetric_difference, "^"  # type:ignore
+        return IndexerOp(
+            _symmetric_difference, "^", self, other  # type:ignore
         )
 
     def __and__(self, other: Any) -> "IndexerOp":
         return self.intersection(other)
 
     def __rand__(self, other: Any) -> "IndexerOp":
-        return self._make_binary_op(other, self, _intersection, "&")
+        return IndexerOp(_intersection, "&", other, self)  # type:ignore
 
     def __or__(self, other: Any) -> "IndexerOp":
         return self.union(other)
 
     def __ror__(self, other: Any) -> "IndexerOp":
-        return self._make_binary_op(other, self, _union, "|")
+        return IndexerOp(_union, "|", other, self)  # type:ignore
 
     def __sub__(self, other: Any) -> "IndexerOp":
         return self.difference(other)
 
     def __rsub__(self, other: Any) -> "IndexerOp":
-        return self._make_binary_op(other, self, _difference, "-")
+        return IndexerOp(_difference, "-", other, self)  # type:ignore
 
     def __xor__(self, other: Any) -> "IndexerOp":
         return self.symmetric_difference(other)
 
     def __rxor__(self, other: Any) -> "IndexerOp":
-        return self._make_binary_op(other, self, _symmetric_difference, "^")
+        return IndexerOp(_symmetric_difference, "^", other, self)  # type:ignore
 
     def __invert__(self) -> "IndexerOp":
         return NotSelector(self)  # type:ignore
@@ -156,12 +144,27 @@ class IndexerOp(LogicalOp, IndexerOpsMixin):
         self,
         op: Callable[[Sequence, Optional[Sequence]], Sequence],
         op_name: str,
-        left: "IndexerMixin",
-        right: Optional["Indexer"] = None,
-        axis: Union[int, str] = "columns",
+        left: IndexerMixin,
+        right: Optional[IndexerMixin] = None,
     ):
+        left = self._validate_selector(left)
+        right = self._validate_selector(
+            right, getattr(left, "axis", "columns"), getattr(left, "level", None)
+        )
+
+        if left.axis != right.axis:
+            raise ValueError(f"{left} and {right} must target the same axis.")
+
         super().__init__(op, op_name, left, right)
-        self.axis = axis
+        self.axis = left.axis
+
+    @staticmethod
+    def _validate_selector(
+        x: Any, axis: Union[int, str] = "columns", level: Optional[int] = None
+    ) -> IndexerMixin:
+        if not hasattr(x, "select"):
+            return Exact(x, axis=axis, level=level)
+        return cast(IndexerMixin, x)
 
 
 class Indexer(IndexerMixin, IndexerOpsMixin, ABC):
