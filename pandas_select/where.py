@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 from .base import LogicalOp, Selector
-from .utils import to_list
+from .utils import to_set
 
 
 Cond = Callable[[pd.Series], Sequence[bool]]
@@ -14,7 +14,7 @@ Cond = Callable[[pd.Series], Sequence[bool]]
 class Where(Selector, ABC):
     def __init__(self, cond: Cond, columns: Optional[Union[str, List[str]]] = None):
         self.cond = cond
-        self.columns = to_list(columns) if columns is not None else columns
+        self.columns = to_set(columns) if columns is not None else columns
 
     @abstractmethod
     def _join(self, df: pd.DataFrame) -> Sequence[bool]:
@@ -30,33 +30,31 @@ class Where(Selector, ABC):
 class WhereOpsMixin:
     """ Common logical operators mixin """
 
-    @staticmethod
-    def _assert_can_do_logical_op(x: Any) -> None:
-        if not isinstance(x, WhereOpsMixin):
-            raise TypeError("Input does not support logical operations.")
-
-    def __and__(self, other: Where) -> "WhereOp":
-        self._assert_can_do_logical_op(other)
+    def intersection(self, other: Where) -> "WhereOp":
         return WhereOp(np.logical_and, "&", self, other)  # type: ignore
 
+    def union(self, other: Where) -> "WhereOp":
+        return WhereOp(np.logical_or, "|", self, other)  # type: ignore
+
+    def symmetric_difference(self, other: Any) -> "WhereOp":
+        return WhereOp(np.logical_xor, "^", self, other)  # type: ignore
+
+    def __and__(self, other: Where) -> "WhereOp":
+        return self.intersection(other)
+
     def __rand__(self, other: Where) -> "WhereOp":
-        self._assert_can_do_logical_op(other)
         return WhereOp(np.logical_and, "&", other, self)  # type: ignore
 
     def __or__(self, other: Where) -> "WhereOp":
-        self._assert_can_do_logical_op(other)
-        return WhereOp(np.logical_or, "|", self, other)  # type: ignore
+        return self.union(other)
 
     def __ror__(self, other: Where) -> "WhereOp":
-        self._assert_can_do_logical_op(other)
         return WhereOp(np.logical_or, "|", other, self)  # type: ignore
 
     def __xor__(self, other: Where) -> "WhereOp":
-        self._assert_can_do_logical_op(other)
-        return WhereOp(np.logical_xor, "^", self, other)  # type: ignore
+        return self.symmetric_difference(other)
 
     def __rxor__(self, other: Where) -> "WhereOp":
-        self._assert_can_do_logical_op(other)
         return WhereOp(np.logical_xor, "^", other, self)  # type: ignore
 
     def __invert__(self) -> "WhereOp":
@@ -64,7 +62,17 @@ class WhereOpsMixin:
 
 
 class WhereOp(LogicalOp, WhereOpsMixin):
-    pass
+    def __init__(
+        self,
+        op: Callable[[Sequence, Optional[Sequence]], Sequence],
+        op_name: str,
+        left: Selector,
+        right: Optional[Selector] = None,
+    ):
+        for sel in (left, right):
+            if sel is not None and not isinstance(sel, WhereOpsMixin):
+                raise TypeError(f"{sel} does not support logical operations.")
+        super().__init__(op, op_name, left, right)
 
 
 class Anywhere(Where, WhereOpsMixin):

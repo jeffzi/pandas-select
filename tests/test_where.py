@@ -98,7 +98,7 @@ def test_multiple_operators(where_df):
 
 def test_where_invalid_ops(where_df):
     selector = Anywhere(lambda x: x > 99)
-    msg = "Input does not support logical operations."
+    msg = "does not support logical operations."
 
     with pytest.raises(TypeError, match=msg):
         "a" & selector
