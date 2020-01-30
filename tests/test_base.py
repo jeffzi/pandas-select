@@ -19,9 +19,9 @@ class DummySelector(Selector):
     "func, kw, expected",
     [
         pp_param(repr, {"b": 0}, "DummySelector(b=0, a=1, optional=None)"),
-        pp_param(str, {"b": 0}, "DummySelector(b=0)"),
-        pp_param(str, {"a": 1, "b": 0}, "DummySelector(b=0)"),
-        pp_param(str, {"a": 2, "b": 0}, "DummySelector(b=0, a=2)"),
+        pp_param(str, {"b": 0}, "DummySelector(0)"),
+        pp_param(str, {"a": 1, "b": 0}, "DummySelector(0)"),
+        pp_param(str, {"a": 2, "b": 0}, "DummySelector(0, a=2)"),
     ],
 )
 def test_selector_fmt(func, kw, expected):
@@ -39,7 +39,7 @@ def test_selector_fmt(func, kw, expected):
             + " >_< "
             + "DummySelector(b='right', a=1, optional=None)",
         ),
-        (str, "DummySelector(b=left) >_< DummySelector(b=right)"),
+        (str, "DummySelector(left) >_< DummySelector(right)"),
     ],
 )
 def test_logical_op_str(func, expected):

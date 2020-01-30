@@ -1,6 +1,5 @@
-import inspect
-
 from abc import ABC, abstractmethod
+from inspect import signature
 from typing import Any, Callable, List, Optional, Sequence
 
 import pandas as pd
@@ -21,7 +20,7 @@ class Selector(ABC):
     def __repr__(self) -> str:
         args = [
             f"{param}={repr(vars(self)[param])}"
-            for param in inspect.signature(self.__class__).parameters
+            for param in signature(self.__class__).parameters
             if param in vars(self)  # param is a class attribute
         ]
         return self._format(args)
@@ -29,10 +28,12 @@ class Selector(ABC):
     def __str__(self) -> str:
         """ Same as generated repr but ignore attributes set to default """
         args = []
-        for param_name, param in inspect.signature(self.__class__).parameters.items():
+        for param_name, param in signature(self.__class__).parameters.items():
             try:
                 value = vars(self)[param_name]
-                if param.default != value:
+                if param.default is param.empty:
+                    args.append(str(value))
+                elif param.default != value:
                     args.append(f"{param_name}={str(value)}")
             except KeyError:
                 pass  # param is not a class attribute
