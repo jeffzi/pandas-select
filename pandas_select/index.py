@@ -43,25 +43,33 @@ class IndexerMixin(Selector, ABC):
 def _logical_and_multi_index(
     left: pd.MultiIndex, right: pd.MultiIndex
 ) -> pd.MultiIndex:
+    # https://github.com/pandas-dev/pandas/pull/31312
+
     if left.equals(right):
         return left
 
-    result_names = left.names if left.names == right.names else None
+    lvals = left._ndarray_values
+    rvals = right._ndarray_values
 
-    unique_right = set(right.values)
+    if left.is_monotonic and right.is_monotonic:
+        return left._inner_indexer(lvals, rvals)[0]
+
+    runiq = set(rvals)
     seen: Set[Tuple] = set()
-    unique_tuples = [
-        x for x in left if x in unique_right and not (x in seen or seen.add(x))  # type: ignore
+    uniques = [
+        x for x in lvals if x in runiq and not (x in seen or seen.add(x))  # type:ignore
     ]
 
-    if len(unique_tuples) == 0:
+    names = left.names if left.names == right.names else None
+
+    if len(uniques) == 0:
         return pd.MultiIndex(
             levels=left.levels,
             codes=[[]] * left.nlevels,
-            names=result_names,
+            names=names,
             verify_integrity=False,
         )
-    return pd.MultiIndex.from_tuples(unique_tuples, sortorder=0, names=result_names)
+    return pd.MultiIndex.from_tuples(uniques, sortorder=0, names=names)
 
 
 def _intersection(left: pd.Index, right: pd.Index) -> pd.Index:
