@@ -2,6 +2,7 @@ __version__ = "0.1.3"
 
 from .column import AllNominal, AllNumeric, HasDtype
 from .index import Contains, EndsWith, Everything, Exact, Match, OneOf, StartsWith
+from .sklearn import ColumnSelector
 from .where import Anywhere, Everywhere
 
 
@@ -21,4 +22,6 @@ __all__ = [
     # where
     "Anywhere",
     "Everywhere",
+    # sklearn
+    "ColumnSelector",
 ]

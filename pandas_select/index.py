@@ -15,7 +15,7 @@ IndexMaskValues = Union[Sequence[int], Sequence[bool], Sequence[str], Sequence[T
 
 class IndexerMixin(Selector, ABC):
     def __init__(self, axis: Union[int, str] = "columns", level: Optional[int] = None):
-        self.axis = IndexerMixin._validate_axis(axis)
+        self.axis = self._validate_axis(axis)
         self.level = level
 
     @staticmethod

@@ -20,6 +20,7 @@ flake8-bugbear = ">=19.8.0"
 pytest = ">=5.0.0"
 mypy = "^0.761"
 tox = ">=3.8.4"
+scikit-learn = ">=0.20"
 
 [tool.black]
 line-length = 88
@@ -53,7 +54,7 @@ not_skip="__init__.py"
 use_parentheses=true
 
 known_first_party="pandas_select"
-known_third_party=["numpy", "pandas", "pytest"]
+known_third_party=["numpy", "pandas", "pytest", "sklearn"]
 
 [tool.tox]
 legacy_tox_ini = """
