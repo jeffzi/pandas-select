@@ -6,7 +6,7 @@ from numpy.testing import assert_array_equal
 from sklearn.compose import make_column_selector, make_column_transformer
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
-from pandas_select import AllNumeric, ColumnSelector, OneOf, StartsWith
+from pandas_select import AllNumeric, AnyOf, ColumnSelector, StartsWith
 
 
 def test_column_selector():
@@ -26,7 +26,7 @@ def test_column_selector():
 
     ct = make_column_transformer(
         (StandardScaler(), ColumnSelector(AllNumeric())),
-        (OneHotEncoder(), ColumnSelector(StartsWith("c") & ~OneOf("country"))),
+        (OneHotEncoder(), ColumnSelector(StartsWith("c") & ~AnyOf("country"))),
     )
     actual = ct.fit_transform(X)
 

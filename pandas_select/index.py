@@ -239,8 +239,8 @@ class Exact(Indexer):
 
         return locs
 
+class AnyOf(Indexer):
 
-class OneOf(Indexer):
     def __init__(
         self,
         values: List[Any],

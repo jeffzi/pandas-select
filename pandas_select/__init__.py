@@ -1,7 +1,15 @@
 __version__ = "0.1.4"
 
 from .column import AllNominal, AllNumeric, HasDtype
-from .index import Contains, EndsWith, Everything, Exact, Match, OneOf, StartsWith
+from .index import (
+    AnyOf,
+    Contains,
+    EndsWith,
+    Everything,
+    Exact,
+    Match,
+    StartsWith,
+)
 from .sklearn import ColumnSelector
 from .where import Anywhere, Everywhere
 
@@ -12,12 +20,12 @@ __all__ = [
     "AllNumeric",
     "HasDtype",
     # index
+    "AnyOf",
     "Contains",
     "EndsWith",
     "Everything",
     "Exact",
     "Match",
-    "OneOf",
     "StartsWith",
     # where
     "Anywhere",

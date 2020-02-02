@@ -1,17 +1,18 @@
 import operator
 
+import numpy as np
 import pandas as pd
 import pytest
 
 from pandas.testing import assert_frame_equal
 
 from pandas_select.index import (
+    AnyOf,
     Contains,
     EndsWith,
     Everything,
     Exact,
     Match,
-    OneOf,
     StartsWith,
 )
 
@@ -249,8 +250,8 @@ def test_multiple_row_operators(df_mi):
         pp_param(-99, []),
     ],
 )
-def test_one_of_col(df, cols, expected):
-    assert_col_indexer(df, OneOf(cols), expected)
+def test_any_of_col(df, cols, expected):
+    assert_col_indexer(df, AnyOf(cols), expected)
 
 
 @pytest.mark.parametrize(
@@ -264,8 +265,8 @@ def test_one_of_col(df, cols, expected):
         pp_param("invalid", []),
     ],
 )
-def test_one_of_row(df, cols, expected):
-    assert_row_indexer(df, OneOf(cols, axis=0), expected)
+def test_any_of_row(df, cols, expected):
+    assert_row_indexer(df, AnyOf(cols, axis=0), expected)
 
 
 @pytest.mark.parametrize(
@@ -290,8 +291,8 @@ def test_one_of_row(df, cols, expected):
         pp_param(1, [99], []),
     ],
 )
-def test_one_of_col_multi_index(df_mi, level, cols, expected):
-    assert_col_indexer(df_mi, OneOf(cols, level=level), expected)
+def test_any_of_col_multi_index(df_mi, level, cols, expected):
+    assert_col_indexer(df_mi, AnyOf(cols, level=level), expected)
 
 
 @pytest.mark.parametrize(
