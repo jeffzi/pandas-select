@@ -6,6 +6,15 @@ import pandas as pd
 
 
 class Selector(ABC):
+    """
+    Base class for all estimators in pandas-select
+
+    Notes
+    -----
+    All selectors should specify all the parameters that can be set at the class level
+    in their ``__init__`` as explicit keyword arguments (no ``*args`` or ``**kwargs``).
+    """
+
     @abstractmethod
     def select(self, df: pd.DataFrame) -> Sequence:
         raise NotImplementedError()
@@ -15,7 +24,7 @@ class Selector(ABC):
 
     def _format(self, args: Optional[List[str]] = None) -> str:
         pretty_args = ", ".join(args) if args else ""
-        return f"{ type(self).__name__}({pretty_args})"
+        return f"{type(self).__name__}({pretty_args})"
 
     def __repr__(self) -> str:
         args = [
@@ -26,7 +35,9 @@ class Selector(ABC):
         return self._format(args)
 
     def __str__(self) -> str:
-        """ Same as generated repr but ignore attributes set to default """
+        """
+        Same as repr but more concise
+        """
         args = []
         for param_name, param in signature(self.__class__).parameters.items():
             try:
@@ -42,6 +53,10 @@ class Selector(ABC):
 
 
 class LogicalOp(Selector, ABC):
+    """
+    Base class for logical operations in pandas-select
+    """
+
     def __init__(
         self,
         op: Callable[[Sequence, Optional[Sequence]], Sequence],

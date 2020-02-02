@@ -4,8 +4,6 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from pandas.testing import assert_frame_equal
-
 from pandas_select.index import (
     AllOf,
     AnyOf,
@@ -87,21 +85,6 @@ def test_exact_col(df, cols, expected):
 )
 def test_exact_row(df, rows, expected):
     assert_row_indexer(df, Exact(rows, axis=0), expected)
-
-
-def test_exact_not_found(df_mi):
-    for axis in [0, 1]:
-        for level in [0, 1]:
-            with pytest.raises(KeyError, match="invalid"):
-                df_mi[Exact("invalid", axis=axis, level=level)]
-
-
-@pytest.mark.parametrize("idx", [(["a", "a", "b"]), (["b", "a", "a"])])
-def test_exact_duplicates(idx):
-    df = pd.DataFrame([0, 0, 0], columns=["col"], index=idx)
-    selector = Exact(["a", "b"], axis=0)
-    with pytest.raises(RuntimeError):
-        assert_frame_equal(df.loc[selector], df.loc[["a", "a", "b"]])
 
 
 @pytest.mark.parametrize(

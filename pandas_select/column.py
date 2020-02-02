@@ -1,13 +1,13 @@
 import pandas as pd
 
+from ._utils import to_set
 from .index import Indexer
-from .utils import to_list
 
 
 class HasDtype(Indexer):
     def __init__(self, dtypes) -> None:  # type: ignore
         super().__init__(axis="columns", level=None)
-        self.dtypes = to_list(dtypes)
+        self.dtypes = to_set(dtypes)
 
     def select(self, df: pd.DataFrame) -> pd.Index:
         df_row = df.iloc[:1]

@@ -1,6 +1,6 @@
 import pytest
 
-from pandas_select.base import LogicalOp, Selector
+from pandas_select._base import LogicalOp, Selector
 
 from .utils import pp_param
 

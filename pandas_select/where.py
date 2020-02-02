@@ -4,8 +4,8 @@ from typing import Any, Callable, Iterable, Optional, Sequence, Union
 import numpy as np
 import pandas as pd
 
-from .base import LogicalOp, Selector
-from .utils import to_set
+from ._base import LogicalOp, Selector
+from ._utils import to_set
 
 
 Cond = Callable[[pd.Series], Sequence[bool]]
@@ -14,7 +14,7 @@ Cond = Callable[[pd.Series], Sequence[bool]]
 class Where(Selector, ABC):
     def __init__(self, cond: Cond, columns: Optional[Union[str, Iterable[str]]] = None):
         self.cond = cond
-        self.columns = to_set(columns) if columns is not None else columns
+        self.columns = columns and to_set(columns)
 
     @abstractmethod
     def _join(self, df: pd.DataFrame) -> Sequence[bool]:
@@ -28,7 +28,9 @@ class Where(Selector, ABC):
 
 
 class WhereOpsMixin:
-    """ Common logical operators mixin """
+    """
+    Common logical operators mixin
+    """
 
     def intersection(self, other: Where) -> "WhereOp":
         return WhereOp(np.logical_and, "&", self, other)  # type: ignore

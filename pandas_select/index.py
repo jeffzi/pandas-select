@@ -1,18 +1,26 @@
 from abc import ABC
 from collections import Counter
 from functools import partial
-from typing import Any, Callable, List, Optional, Sequence, Set, Tuple, Union, cast
+from typing import Any, Callable, Optional, Sequence, Set, Tuple, Union, cast
 
 import numpy as np
 import pandas as pd
 
-from .base import LogicalOp, Selector
-from .utils import to_list
+from pandas.util import Substitution
+
+from ._base import LogicalOp, Selector
+from ._utils import to_seq, to_set
 from .where import Everywhere
 
 
 IndexMaskValues = Union[Sequence[int], Sequence[bool], Sequence[str], Sequence[Tuple]]
 
+
+def _validate_axis(axis: Union[int, str]) -> Union[int, str]:
+    allowed = [0, 1, "index", "columns"]
+    if axis not in allowed:
+        raise ValueError(f"axis must be one of {allowed}.")
+    return axis
 
 
 def _validate_index_mask(mask: Sequence) -> Union[list, pd.Index]:
@@ -31,16 +39,13 @@ def _validate_index_mask(mask: Sequence) -> Union[list, pd.Index]:
     return mask
 
 class IndexerMixin(Selector, ABC):
-    def __init__(self, axis: Union[int, str] = "columns", level: Optional[int] = None):
-        self.axis = self._validate_axis(axis)
-        self.level = level
 
-    @staticmethod
-    def _validate_axis(axis: Union[int, str]) -> Union[int, str]:
-        allowed = [0, 1, "columns"]
-        if axis not in allowed:
-            raise ValueError(f"axis must be one of {allowed}.")
-        return axis
+
+    def __init__(
+        self, axis: Union[int, str] = "columns", level: Optional[Union[int, str]] = None
+    ):
+        self.axis = _validate_axis(axis)
+        self.level = level
 
     def _get_index_mask(self, index: pd.Index) -> IndexMaskValues:
         raise NotImplementedError()
@@ -63,7 +68,7 @@ class IndexerMixin(Selector, ABC):
 def _logical_and_multi_index(
     left: pd.MultiIndex, right: pd.MultiIndex
 ) -> pd.MultiIndex:
-    # https://github.com/pandas-dev/pandas/pull/31312
+    # Fix https://github.com/pandas-dev/pandas/issues/31325
 
     if left.equals(right):
         return left
@@ -112,7 +117,9 @@ def _symmetric_difference(left: pd.Index, right: pd.Index) -> pd.Index:
 
 
 class IndexerOpsMixin:
-    """ Common logical operators mixin """
+    """
+    Common logical operators mixin
+    """
 
     def intersection(self, other: Any) -> "IndexerOp":
         return IndexerOp(_intersection, "&", self, other)  # type:ignore
@@ -240,65 +247,97 @@ class Exact(Indexer):
 
     @staticmethod
     def _validate_values(values: Union[Any, Sequence]) -> Sequence:
-        values = to_list(values)
+        values = to_seq(values)
         dups = [x for x, cnt in Counter(values).items() if cnt > 1]
         if dups:
             raise ValueError(f"Found duplicated values")
         return values
 
-    def _get_index_mask_from_unique(self, index: pd.Index) -> np.ndarray:
-        indexer = index.get_indexer(self.values)
-        missing = np.asarray(self.values)[indexer == -1].tolist()
-        if missing:
+    def _get_index_mask(self, index: pd.Index) -> Union[Sequence[int], np.ndarray]:
+        indexer = index.get_indexer_for(self.values)
+
+        missing_mask = indexer == -1
+        if missing_mask.any():
+            missing = np.asarray(self.values)[missing_mask].tolist()
             raise KeyError(missing)
+
         return indexer
 
-    def _get_index_mask(self, index: pd.Index) -> Union[List[int], np.ndarray]:
-        if not index.has_duplicates:
-            return self._get_index_mask_from_unique(index)
 
-        locs = [index.get_loc(val) for val in self.values]
-
-        if index.is_monotonic:
-            # locs contains a mixture of slices and ints
-            indexer: List[int] = []
-            for loc in locs:
-                if isinstance(loc, slice):
-                    indices = np.arange(loc.start, loc.stop, loc.step)
-                    indexer.extend(indices)
-                else:
-                    indexer.append(loc)
-            locs = np.ravel(indexer)
-        else:
-            # locs contains a mixture of boolean arrays and ints
-            masks = []
-            for loc in locs:
-                if isinstance(loc, int):
-                    mask = np.zeros(len(index), dtype=bool)
-                    mask[loc] = True
-                else:
-                    mask = loc
-                masks.append(mask)
-            locs = np.logical_or.reduce(masks)
-
-        return locs
-
+@Substitution(axis=AXIS_DOC, level=LEVEL_DOC)
 class AnyOf(Indexer):
+    """
+    Select labels from a list,
+    sorted by the order they appear in the:class:`~pandas.DataFrame`.
+
+    ``AnyOf`` is similar to :meth:`pandas.Series.isin`.
+
+    Parameters
+    ----------
+    values: single label or list-like
+        Index or column labels to select
+    %(axis)s
+    %(level)s
+
+    Examples
+    --------
+    >>> df = pd.DataFrame({'A': [1, 2], 'B': [3, 4]}, index=["a", "b"])
+    >>> df
+       A  B
+    a  1  3
+    b  2  4
+    >>> df[AnyOf(["B", "A"])]
+       A  B
+    a  1  3
+    b  2  4
+    >>> df.loc[AnyOf("b", axis="index")]
+       A  B
+    b  2  4
+    """
 
     def __init__(
         self,
-        values: List[Any],
+        values: Any,
         axis: Union[int, str] = "columns",
         level: Optional[int] = None,
     ):
         super().__init__(axis, level)
-        self.values = to_list(values)
+        self.values = to_set(values)
 
     def _get_index_mask(self, index: pd.Index) -> np.ndarray:
         return index.isin(self.values)
 
 
+@Substitution(axis=AXIS_DOC, level=LEVEL_DOC)
 class AllOf(AnyOf):
+    """
+    Same as :class:`AnyOf`, except that a :exc:`KeyError` is raised for labels
+    that don't exist.
+
+    Parameters
+    ----------
+    values: single label or list-like
+        Index or column labels to select
+    %(axis)s
+    %(level)s
+
+    Examples
+    --------
+    >>> df = pd.DataFrame({'A': [1, 2], 'B': [3, 4]}, index=["a", "b"])
+    >>> df
+       A  B
+    a  1  3
+    b  2  4
+    >>> df[AllOf(["B", "A"])]
+       A  B
+    a  1  3
+    b  2  4
+    >>> df[AllOf(["B", "A", "invalid"])]
+    Traceback (most recent call last):
+    ...
+    KeyError: {'invalid'}
+    """
+
     def select(self, df: pd.DataFrame) -> pd.Index:
         selected = super().select(df)
 
@@ -310,8 +349,6 @@ class AllOf(AnyOf):
 
 
 class Everything(Indexer):
-    def __init__(self, axis: Union[int, str] = "columns"):
-        super().__init__(axis, None)
 
     def _get_index_mask(self, index: pd.Index) -> np.ndarray:
         return np.arange(0, index.size)
