@@ -254,6 +254,17 @@ class AnyOf(Indexer):
         return index.isin(self.values)
 
 
+class AllOf(AnyOf):
+    def select(self, df: pd.DataFrame) -> pd.Index:
+        selected = super().select(df)
+
+        missing = self.values.difference(selected)
+        if missing:
+            raise KeyError(missing)
+
+        return selected
+
+
 class Everything(Indexer):
     def __init__(self, axis: Union[int, str] = "columns"):
         super().__init__(axis, None)

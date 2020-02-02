@@ -7,6 +7,7 @@ import pytest
 from pandas.testing import assert_frame_equal
 
 from pandas_select.index import (
+    AllOf,
     AnyOf,
     Contains,
     EndsWith,
@@ -236,7 +237,7 @@ def test_multiple_row_operators(df_mi):
     assert (drop_1 | select_1).select(df_mi).tolist() == [("A", 0)]
 
 
-# ##############################  OneOf  ##############################
+# ##############################  AnyOf, AllOf  ##############################
 
 
 @pytest.mark.parametrize(
@@ -306,8 +307,13 @@ def test_any_of_col_multi_index(df_mi, level, cols, expected):
         pp_param(1, 99, []),
     ],
 )
-def test_one_of_row_multi_index(df_mi, level, cols, expected):
-    assert_row_indexer(df_mi, OneOf(cols, axis=0, level=level), expected)
+def test_any_of_row_multi_index(df_mi, level, cols, expected):
+    assert_row_indexer(df_mi, AnyOf(cols, axis=0, level=level), expected)
+
+
+def test_all_of_raise(df):
+    with pytest.raises(KeyError, match="invalid"):
+        df[AllOf(["int", "{'invalid'}"])]
 
 
 # ##############################  Everything  ##############################

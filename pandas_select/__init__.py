@@ -2,6 +2,7 @@ __version__ = "0.1.4"
 
 from .column import AllNominal, AllNumeric, HasDtype
 from .index import (
+    AllOf,
     AnyOf,
     Contains,
     EndsWith,
@@ -21,6 +22,7 @@ __all__ = [
     "HasDtype",
     # index
     "AnyOf",
+    "AllOf",
     "Contains",
     "EndsWith",
     "Everything",
