@@ -273,91 +273,106 @@ class Everything(Indexer):
         return np.arange(0, index.size)
 
 
-class _PandasStr(Indexer):
+class _SeriesFunc(Indexer):
     def __init__(
         self,
         func: Callable[[np.ndarray, str], np.ndarray],
-        pat: str,
         axis: Union[int, str] = "columns",
         level: Optional[int] = None,
+        **kwargs: Any,
     ):
         super().__init__(axis, level)
-        self.func = func
-        self.pat = pat
+        self.func = partial(func, **kwargs)
 
     def _get_index_mask(self, index: pd.Index) -> np.ndarray:
-        return self.func(index.values, self.pat)
+        if isinstance(index, pd.MultiIndex):
+            mi_df = index.to_frame()
+            selected = mi_df[Everywhere(self.func)]
+            values = pd.MultiIndex.from_frame(selected).to_numpy()
+            return index.get_locs(values)
+        return self.func(index.values)
 
 
-class _PandasStrCase(_PandasStr):
+class _IgnoreCase(_SeriesFunc):
     def __init__(
         self,
         func: Callable[[np.ndarray, str], np.ndarray],
         pat: str,
-        case: bool = False,
+        case: bool = True,
         axis: Union[int, str] = "columns",
         level: Optional[int] = None,
+        **kwargs: Any,
     ):
-        super().__init__(func, pat, axis, level)
+        super().__init__(func, axis, level, **kwargs)
+        self.pat = pat
         self.case = case
 
     def _get_index_mask(self, index: pd.Index) -> np.ndarray:
         if self.case:
-            pat = self.pat.lower()
-            cols = index.str.lower()
-        else:
             pat = self.pat
             cols = index.values
+        else:
+            pat = self.pat.lower()
+            cols = index.str.lower()
         return self.func(cols, pat)
 
 
-class StartsWith(_PandasStrCase):
+class StartsWith(_IgnoreCase):
     def __init__(
         self,
         pat: str,
-        case: bool = False,
+        case: bool = True,
         axis: Union[int, str] = "columns",
         level: Optional[int] = None,
     ):
-        super().__init__(pd.core.strings.str_startswith, pat, case, axis, level)
+        super().__init__(
+            pd.core.strings.str_startswith, pat, case, axis, level, na=False
+        )
 
 
-class EndsWith(_PandasStrCase):
+class EndsWith(_IgnoreCase):
+
     def __init__(
         self,
         pat: str,
-        case: bool = False,
+        case: bool = True,
         axis: Union[int, str] = "columns",
         level: Optional[int] = None,
     ):
-        super().__init__(pd.core.strings.str_endswith, pat, case, axis, level)
+        super().__init__(pd.core.strings.str_endswith, pat, case, axis, level, na=False)
 
 
-class Contains(_PandasStr):
+class Contains(_SeriesFunc):
+
     def __init__(
         self,
         pat: str,
-        case: bool = False,
+        case: bool = True,
         flags: int = 0,
-        na: Any = np.nan,
         regex: bool = True,
         axis: Union[int, str] = "columns",
         level: Optional[int] = None,
     ):
-        func = partial(
-            pd.core.strings.str_contains, case=case, flags=flags, na=na, regex=regex
+        super().__init__(
+            pd.core.strings.str_contains,
+            axis,
+            level,
+            pat=pat,
+            case=case,
+            flags=flags,
+            na=False,
+            regex=regex,
         )
-        super().__init__(func, pat, axis, level)
 
 
-class Match(_PandasStr):
+class Match(_SeriesFunc):
     def __init__(
         self,
         pat: str,
         flags: int = 0,
-        na: Any = np.nan,
         axis: Union[int, str] = "columns",
         level: Optional[int] = None,
     ):
-        func = partial(pd.core.strings.str_match, flags=flags, na=na)
-        super().__init__(func, pat, axis, level)
+        super().__init__(
+            pd.core.strings.str_match, axis, level, pat=pat, flags=flags, na=False
+        )

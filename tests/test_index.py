@@ -351,8 +351,8 @@ def test_startswith(df_pattern_lower):
 
 
 def test_startswith_case(df_pattern_lower, df_pattern_upper):
-    assert_col_indexer(df_pattern_lower, StartsWith("A", case=True), ["a", "a__b_d1"])
-    assert_col_indexer(df_pattern_upper, StartsWith("a", case=True), ["A", "A__b_d1"])
+    assert_col_indexer(df_pattern_lower, StartsWith("A", case=False), ["a", "a__b_d1"])
+    assert_col_indexer(df_pattern_upper, StartsWith("a", case=False), ["A", "A__b_d1"])
 
 
 def test_endswith(df_pattern_lower):
@@ -360,8 +360,8 @@ def test_endswith(df_pattern_lower):
 
 
 def test_endswith_case(df_pattern_lower, df_pattern_upper):
-    assert_col_indexer(df_pattern_lower, EndsWith("B", case=True), ["b"])
-    assert_col_indexer(df_pattern_upper, EndsWith("b", case=True), ["B"])
+    assert_col_indexer(df_pattern_lower, EndsWith("B", case=False), ["b"])
+    assert_col_indexer(df_pattern_upper, EndsWith("b", case=False), ["B"])
 
 
 def test_contains(df_pattern_lower):
@@ -370,3 +370,7 @@ def test_contains(df_pattern_lower):
 
 def test_match(df_pattern_lower):
     assert_col_indexer(df_pattern_lower, Match(".*_d[0-9]{1}"), ["a__b_d1"])
+
+
+def test_pandas_func_multi_index(df_mi):
+    assert_col_indexer(df_mi, Contains("int|number"), [("int", "number")])
