@@ -135,9 +135,29 @@ def test_exact_row_multi_index(df_mi, level, rows, expected):
     assert_row_indexer(df_mi, Exact(rows, axis=0, level=level), expected)
 
 
+def test_exact_not_found(df_mi):
+    for axis in [0, 1]:
+        for level in [0, 1, None]:
+            with pytest.raises(KeyError, match=str("invalid")):
+                df_mi[Exact("invalid", axis=axis, level=level)]
+
+
+def test_exact_duplicates():
+    df = pd.DataFrame([0, 0, 0], columns=["col"], index=["a", "a", "b"])
+    selector = Exact(["a", "b"], axis=0)
+    with pytest.raises(RuntimeError):
+        df.loc[selector]
+
+
 def test_exact_duplicate_values():
     with pytest.raises(ValueError):
         Exact(["A", "A"])
+
+
+def test_exact_nan():
+    df = pd.DataFrame({"a": [1], np.nan: [1]})
+    actual = df[Exact([np.nan, "a"])].columns
+    assert pd.isna(actual[0]) and actual[1] == "a"
 
 
 # ##############################  Logical operations  ##############################
@@ -235,6 +255,21 @@ def test_multiple_row_operators(df_mi):
     select_1 = Exact("A", axis=0, level=0) ^ Exact(1, axis=0, level=1)
 
     assert (drop_1 | select_1).select(df_mi).tolist() == [("A", 0)]
+
+
+@pytest.mark.parametrize(
+    "sel",
+    [
+        pp_param(Exact(np.nan) & Exact(["a", np.nan])),
+        pp_param(Exact(np.nan) | Exact("a")),
+        pp_param(Exact(np.nan) ^ Exact("a")),
+        pp_param(Exact(np.nan) - Exact("a")),
+    ],
+)
+def test_op_with_nan(sel):
+    df = pd.DataFrame({"a": [1], np.nan: [1]})
+    actual = df[sel].columns
+    assert pd.isna(actual[0])
 
 
 # ##############################  AnyOf, AllOf  ##############################

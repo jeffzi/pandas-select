@@ -8,10 +8,27 @@ import pandas as pd
 
 from .base import LogicalOp, Selector
 from .utils import to_list
+from .where import Everywhere
 
 
 IndexMaskValues = Union[Sequence[int], Sequence[bool], Sequence[str], Sequence[Tuple]]
 
+
+
+def _validate_index_mask(mask: Sequence) -> Union[list, pd.Index]:
+    """ Ensure ``index`` can be used to mask another index.
+
+    Cast to a list when appropriate to avoid raising
+    ``ValueError: cannot mask with array containing NA / NaN value``
+
+    Notes
+    -----
+    See Also https://pandas.pydata.org/pandas-docs/stable/user_guide/missing_data.html#missing-data-casting-rules-and-indexing  # noqa: B950
+    """
+    if not isinstance(mask, pd.MultiIndex) and pd.isna(mask).any():
+        # isna is not defined for MultiIndex
+        return list(mask)
+    return mask
 
 class IndexerMixin(Selector, ABC):
     def __init__(self, axis: Union[int, str] = "columns", level: Optional[int] = None):
@@ -29,15 +46,18 @@ class IndexerMixin(Selector, ABC):
         raise NotImplementedError()
 
     def select(self, df: pd.DataFrame) -> pd.Index:
-        index = df._get_axis(self.axis)
+        labels = df._get_axis(self.axis)
         if self.level is not None:
-            level = index.get_level_values(self.level)
+            index = labels.get_level_values(self.level)
         else:
-            level = index
-        selected: pd.Index = index[self._get_index_mask(level)]
-        if selected.has_duplicates:
+            index = labels
+
+        selection: pd.Index = labels[self._get_index_mask(index)]
+
+        if selection.has_duplicates:
             raise RuntimeError(f"Found duplicated values in selection")
-        return selected
+
+        return _validate_index_mask(selection)
 
 
 def _logical_and_multi_index(
@@ -133,7 +153,18 @@ class IndexerOpsMixin:
         return IndexerOp(_symmetric_difference, "^", other, self)  # type:ignore
 
     def __invert__(self) -> "IndexerOp":
-        return NotSelector(self)  # type:ignore
+        return IndexerInvertOp(self)  # type:ignore
+
+
+def _to_index(x: Union[Sequence, pd.Index]) -> pd.Index:
+    if isinstance(x, pd.Index):
+        return x
+
+    x = to_seq(x)
+    if isinstance(x[0], tuple):
+        return pd.MultiIndex.from_tuples(x)
+
+    return pd.Index(x)
 
 
 class IndexerOp(LogicalOp, IndexerOpsMixin):
@@ -163,12 +194,23 @@ class IndexerOp(LogicalOp, IndexerOpsMixin):
             return Exact(x, axis=axis, level=level)
         return cast(IndexerMixin, x)
 
+    def select(self, df: pd.DataFrame) -> Sequence:
+        lvals = _to_index(self.left(df))
+        args = [lvals]
+
+        if self.right is not None:
+            rvals = _to_index(self.right(df))
+            args.append(rvals)
+
+        selection = self.op(*args)
+        return _validate_index_mask(selection)
+
 
 class Indexer(IndexerMixin, IndexerOpsMixin, ABC):
     pass
 
 
-class NotSelector(IndexerOp):
+class IndexerInvertOp(IndexerOp):
     def __init__(self, selector: Indexer):
         super().__init__(np.logical_not, "~", selector)
         self.axis = selector.axis
@@ -180,9 +222,11 @@ class NotSelector(IndexerOp):
             level_index = index.get_level_values(self.level)
         else:
             level_index = index
-        values = self.left(df).get_level_values(self.level)  # type:ignore
-        return index[~level_index.isin(values)]
 
+        values = self.left(df).get_level_values(self.level)  # type: ignore
+        selection = index[~level_index.isin(values)]
+
+        return _validate_index_mask(selection)
 
 class Exact(Indexer):
     def __init__(
