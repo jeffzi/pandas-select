@@ -1,31 +1,16 @@
-# Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[cod]
-
-# Distribution / packaging
-*.egg-info/
-
-# IDE
+.DS_Store
 .idea
-.vscode
-
-# Unit test / coverage reports
-.pytest_cache/
-.tox/
-
-# pyenv
 .python-version
-
-# Environments
-.env
+.tox
 .venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
+.vscode
+*cache
+*.egg-info/
+*env
+*.py[cod]
+build
+coverage*
+dist
+docs/_build
+htmlcov
 poetry.lock
-
-# mypy
-
-.mypy_cache
