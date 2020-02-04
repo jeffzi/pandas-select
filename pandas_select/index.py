@@ -13,6 +13,22 @@ from ._utils import to_seq, to_set
 from .where import Everywhere
 
 
+__all__ = [
+    "IndexerMixin",
+    "IndexerOpsMixin",
+    "Indexer",
+    "Exact",
+    "AnyOf",
+    "AllOf",
+    "Everything",
+    "IndexMask",
+    "StartsWith",
+    "EndsWith",
+    "Contains",
+    "Match",
+]
+
+
 IndexMaskValues = Union[Sequence[int], Sequence[bool], Sequence[str], Sequence[Tuple]]
 
 
@@ -354,48 +370,50 @@ class Everything(Indexer):
         return np.arange(0, index.size)
 
 
-class _SeriesFunc(Indexer):
+class IndexMask(Indexer):
     def __init__(
         self,
-        func: Callable[[np.ndarray, str], np.ndarray],
+        cond: Union[Sequence[bool], Callable[[pd.Index], Sequence[bool]]],
         axis: Union[int, str] = "columns",
         level: Optional[int] = None,
         **kwargs: Any,
     ):
         super().__init__(axis, level)
-        self.func = partial(func, **kwargs)
+        self.cond = cond
+        self.kwargs = kwargs
 
-    def _get_index_mask(self, index: pd.Index) -> np.ndarray:
+    def _get_index_mask(self, index: pd.Index) -> Sequence[bool]:
+        if not callable(self.cond):
+            return self.cond
+
+        func = partial(self.cond, **self.kwargs)
+
         if isinstance(index, pd.MultiIndex):
             mi_df = index.to_frame()
-            selected = mi_df[Everywhere(self.func)]
+            selected = mi_df[Everywhere(func)]
             values = pd.MultiIndex.from_frame(selected).to_numpy()
-            return index.get_locs(values)
-        return self.func(index.values)
+            return index.get_locs(values)  # type: ignore
+
+        return func(index)
 
 
-class _IgnoreCase(_SeriesFunc):
+class _IgnoreCase(IndexMask):
     def __init__(
         self,
-        func: Callable[[np.ndarray, str], np.ndarray],
+        cond: Callable[[np.ndarray, str], np.ndarray],
         pat: str,
         case: bool = True,
         axis: Union[int, str] = "columns",
         level: Optional[int] = None,
         **kwargs: Any,
     ):
-        super().__init__(func, axis, level, **kwargs)
-        self.pat = pat
+        kwargs["pat"] = pat if case else pat.lower()
+        super().__init__(cond, axis, level, **kwargs)  # type:ignore
         self.case = case
 
     def _get_index_mask(self, index: pd.Index) -> np.ndarray:
-        if self.case:
-            pat = self.pat
-            cols = index.values
-        else:
-            pat = self.pat.lower()
-            cols = index.str.lower()
-        return self.func(cols, pat)
+        index = index if self.case else index.str.lower()
+        return super()._get_index_mask(index)
 
 
 class StartsWith(_IgnoreCase):
@@ -423,7 +441,7 @@ class EndsWith(_IgnoreCase):
         super().__init__(pd.core.strings.str_endswith, pat, case, axis, level, na=False)
 
 
-class Contains(_SeriesFunc):
+class Contains(IndexMask):
 
     def __init__(
         self,
@@ -446,7 +464,7 @@ class Contains(_SeriesFunc):
         )
 
 
-class Match(_SeriesFunc):
+class Match(IndexMask):
     def __init__(
         self,
         pat: str,

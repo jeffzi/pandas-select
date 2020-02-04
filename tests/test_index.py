@@ -11,6 +11,7 @@ from pandas_select.index import (
     EndsWith,
     Everything,
     Exact,
+    IndexMask,
     Match,
     StartsWith,
 )
@@ -351,6 +352,36 @@ def test_everything(df_mi):
     )
 
 
+# ##############################  IndexMask  ##############################
+
+
+@pytest.mark.parametrize(
+    "cond, expected",
+    [
+        pp_param([True, False, True, False], ["int", "category"]),
+        pp_param([False, False, False, False], []),
+        pp_param(lambda x: x == "int", ["int"]),
+    ],
+)
+def test_mask_col(df, cond, expected):
+    assert_col_indexer(df, IndexMask(cond), expected)
+
+
+@pytest.mark.parametrize(
+    "cond, expected",
+    [
+        pp_param(
+            [True, False, True, False], [("int", "number"), ("category", "nominal")]
+        ),
+        pp_param([False, False, False, False], []),
+        pp_param(lambda x: x.isin(["int"]), []),
+        pp_param(lambda x: x.isin(["int", "number"]), [("int", "number")]),
+    ],
+)
+def test_mask_multi_index(df_mi, cond, expected):
+    assert_col_indexer(df_mi, IndexMask(cond), expected)
+
+
 # ##############################  Pandas str  ##############################
 
 
@@ -388,7 +419,3 @@ def test_contains(df_pattern_lower):
 
 def test_match(df_pattern_lower):
     assert_col_indexer(df_pattern_lower, Match(".*_d[0-9]{1}"), ["a__b_d1"])
-
-
-def test_pandas_func_multi_index(df_mi):
-    assert_col_indexer(df_mi, Contains("int|number"), [("int", "number")])

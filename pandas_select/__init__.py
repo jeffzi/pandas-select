@@ -8,6 +8,7 @@ from .index import (
     EndsWith,
     Everything,
     Exact,
+    IndexMask,
     Match,
     StartsWith,
 )
@@ -27,6 +28,7 @@ __all__ = [
     "EndsWith",
     "Everything",
     "Exact",
+    "IndexMask",
     "Match",
     "StartsWith",
     # where
