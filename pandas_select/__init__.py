@@ -1,7 +1,7 @@
 __version__ = "0.1.4"
 
-from .column import AllNominal, AllNumeric, HasDtype
 from .index import (
+from .column import AllBool, AllCat, AllNominal, AllNumber, AllStr, HasDtype
     AllOf,
     AnyOf,
     Contains,
@@ -18,8 +18,11 @@ from .where import Anywhere, Everywhere
 
 __all__ = [
     # column
+    "AllBool",
+    "AllCat",
     "AllNominal",
-    "AllNumeric",
+    "AllNumber",
+    "AllStr",
     "HasDtype",
     # index
     "AnyOf",
