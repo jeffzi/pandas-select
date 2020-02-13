@@ -1,4 +1,4 @@
-__version__ = "0.1.4"
+__version__ = "0.1.5"
 
 from .bool import Anywhere, Everywhere
 from .column import AllBool, AllCat, AllNominal, AllNumber, AllStr, HasDtype
