@@ -101,7 +101,7 @@ def test_where_invalid_ops(where_df):
     msg = "does not support logical operations."
 
     with pytest.raises(TypeError, match=msg):
-        "a" & selector
+        where_df["a" & selector]
     with pytest.raises(TypeError, match=msg):
         "a" | selector
     with pytest.raises(TypeError, match=msg):

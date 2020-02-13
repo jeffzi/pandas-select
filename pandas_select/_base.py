@@ -5,6 +5,9 @@ from typing import Any, Callable, List, Optional, Sequence
 import pandas as pd
 
 
+__all__ = ["Selector", "LogicalOp"]
+
+
 class Selector(ABC):
     """
     Base class for all estimators in pandas-select
@@ -70,10 +73,10 @@ class LogicalOp(Selector, ABC):
         self.right = right
 
     def select(self, df: pd.DataFrame) -> Sequence:
-        args = [self.left(df)]
+        operands = [self.left(df)]
         if self.right is not None:
-            args.append(self.right(df))
-        return self.op(*args)
+            operands.append(self.right(df))
+        return self.op(*operands)
 
     def _pretty_format(self, fmt: Callable[[Any], str]) -> str:
         if self.right is None:

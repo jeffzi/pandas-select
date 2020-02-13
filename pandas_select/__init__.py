@@ -1,6 +1,7 @@
 __version__ = "0.1.4"
 
 from .index import (
+from .bool import Anywhere, Everywhere
 from .column import AllBool, AllCat, AllNominal, AllNumber, AllStr, HasDtype
     AllOf,
     AnyOf,
@@ -13,7 +14,6 @@ from .column import AllBool, AllCat, AllNominal, AllNumber, AllStr, HasDtype
     StartsWith,
 )
 from .sklearn import ColumnSelector
-from .where import Anywhere, Everywhere
 
 
 __all__ = [
