@@ -77,7 +77,7 @@ class LogicalOp(Selector, ABC):
 
     def _pretty_format(self, fmt: Callable[[Any], str]) -> str:
         if self.right is None:
-            return f"{fmt(self.op_name)}{fmt(self.left)}"
+            return f"{self.op_name}{fmt(self.left)}"
         return f"{fmt(self.left)} {self.op_name} {fmt(self.right)}"
 
     def __repr__(self) -> str:
