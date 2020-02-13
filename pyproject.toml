@@ -9,8 +9,8 @@ description = ""
 authors = ["Jean-Francois Zinque <jzinque@gmail.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.6"
-pandas = ">=0.24.0"
+python = "^3.6.1"
+pandas = ">=0.25.1"
 
 [tool.poetry.dev-dependencies]
 black = {version = ">=19.10b0", python = " >=3.6"}
@@ -59,12 +59,18 @@ known_third_party=["numpy", "pandas", "pytest", "sklearn"]
 [tool.tox]
 legacy_tox_ini = """
 [tox]
+envlist = py{36,37,38}-pandas{0.25,1}
 isolated_build = true
-envlist = py36, py37, py38
 
 [testenv]
 whitelist_externals = poetry
+
+deps =
+    pandas0.25: pandas==0.25.1
+    pandas1: pandas==1.0.0
+    scikit-learn
+    pytest
+
 commands =
-    poetry install -v
-    poetry run pytest {posargs} tests/
+    pytest {posargs} tests/
 """
