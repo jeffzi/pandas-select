@@ -2,11 +2,11 @@ from typing import List
 
 import pandas as pd
 
-from .index import IndexerMixin
+from .label import LabelSelector
 
 
 class ColumnSelector:
-    def __init__(self, selector: IndexerMixin):
+    def __init__(self, selector: LabelSelector):
         self.selector = selector
 
         if not hasattr(selector, "axis") or selector.axis not in [1, "columns"]:

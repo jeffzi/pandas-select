@@ -3,13 +3,13 @@ from typing import List, Optional, Union
 import pandas as pd
 
 from ._utils import to_set
-from .index import Indexer
+from .label import LabelSelector
 
 
-class HasDtype(Indexer):
 Dtypes = Union[str, List[str], type, List[type]]
 
 
+class HasDtype(LabelSelector):
     """
     Select columns based on the column dtypes.
 

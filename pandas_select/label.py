@@ -10,26 +10,38 @@ from pandas.util import Substitution
 
 from ._base import LogicalOp, Selector
 from ._utils import to_seq, to_set
-from .where import Everywhere
+from .bool import Everywhere
 
 
 __all__ = [
-    "IndexerMixin",
-    "IndexerOpsMixin",
-    "Indexer",
+    "_LabelSelectorMixin",
+    "_LabelOpsMixin",
+    "LabelSelector",
     "Exact",
     "AnyOf",
     "AllOf",
     "Everything",
-    "IndexMask",
+    "LabelMask",
     "StartsWith",
     "EndsWith",
     "Contains",
     "Match",
 ]
 
+LabelMaskValues = Union[Sequence[int], Sequence[bool], Sequence[str], Sequence[Tuple]]
 
-IndexMaskValues = Union[Sequence[int], Sequence[bool], Sequence[str], Sequence[Tuple]]
+AXIS_DOC = (
+    "axis: default columns\n"
+    "\tAxis along which the function is applied, {0 or 'index', 1 or 'columns'}\n"
+)
+
+LEVEL_DOC = (
+    "level: optional\n"
+    "\t`level` is either the integer position of the level, "
+    "or the name of the level.\n"
+    "\tIt should only be set if ``axis`` targets a MultiIndex, "
+    "otherwise a :exc:`IndexError` will be raised.\n"
+)
 
 
 def _validate_axis(axis: Union[int, str]) -> Union[int, str]:
@@ -40,22 +52,32 @@ def _validate_axis(axis: Union[int, str]) -> Union[int, str]:
 
 
 def _validate_index_mask(mask: Sequence) -> Union[list, pd.Index]:
-    """ Ensure ``index`` can be used to mask another index.
+    """ Ensure `index` can be used to mask another index.
 
     Cast to a list when appropriate to avoid raising
     ``ValueError: cannot mask with array containing NA / NaN value``
 
     Notes
     -----
-    See Also https://pandas.pydata.org/pandas-docs/stable/user_guide/missing_data.html#missing-data-casting-rules-and-indexing  # noqa: B950
+    See Also https://pandas.pydata.org/pandas-docs/stable/user_guide/missing_data.html#missing
+    -data-casting-rules-and-indexing  # noqa: B950
     """
     if not isinstance(mask, pd.MultiIndex) and pd.isna(mask).any():
         # isna is not defined for MultiIndex
         return list(mask)
     return mask
 
-class IndexerMixin(Selector, ABC):
 
+@Substitution(axis=AXIS_DOC, level=LEVEL_DOC)
+class _LabelSelectorMixin(Selector, ABC):
+    """
+    Base class for selecting indexes or columns based on their labels.
+
+    Parameters
+    ----------
+    %(axis)s
+    %(level)s
+    """
 
     def __init__(
         self, axis: Union[int, str] = "columns", level: Optional[Union[int, str]] = None
@@ -63,7 +85,7 @@ class IndexerMixin(Selector, ABC):
         self.axis = _validate_axis(axis)
         self.level = level
 
-    def _get_index_mask(self, index: pd.Index) -> IndexMaskValues:
+    def _get_index_mask(self, index: pd.Index) -> LabelMaskValues:
         raise NotImplementedError()
 
     def select(self, df: pd.DataFrame) -> pd.Index:
@@ -132,51 +154,66 @@ def _symmetric_difference(left: pd.Index, right: pd.Index) -> pd.Index:
     return left.symmetric_difference(right, sort=False)
 
 
-class IndexerOpsMixin:
+class _LabelOpsMixin:
     """
     Common logical operators mixin
     """
 
-    def intersection(self, other: Any) -> "IndexerOp":
-        return IndexerOp(_intersection, "&", self, other)  # type:ignore
+    def intersection(self, other: Any) -> "LabelOp":
+        """
+        Return a new selector that selects elements in both selectors.
+        """
+        return LabelOp(_intersection, "&", self, other)  # type:ignore
 
-    def union(self, other: Any) -> "IndexerOp":
-        return IndexerOp(_union, "|", self, other)  # type:ignore
+    def union(self, other: Any) -> "LabelOp":
+        """
+        Return a new selector that selects elements in the left side but not in right
+        side.
+        """
+        return LabelOp(_union, "|", self, other)  # type:ignore
 
-    def difference(self, other: Any) -> "IndexerOp":
-        return IndexerOp(_difference, "-", self, other)  # type:ignore
+    def difference(self, other: Any) -> "LabelOp":
+        """
+        Return a new selector that selects elements in the left side but not in the
+        right side.
+        """
+        return LabelOp(_difference, "-", self, other)  # type:ignore
 
-    def symmetric_difference(self, other: Any) -> "IndexerOp":
-        return IndexerOp(
+    def symmetric_difference(self, other: Any) -> "LabelOp":
+        """
+        Return a new selector that selects elements that are either in the left side or
+        the right side but not in both.
+        """
+        return LabelOp(
             _symmetric_difference, "^", self, other  # type:ignore
         )
 
-    def __and__(self, other: Any) -> "IndexerOp":
+    def __and__(self, other: Any) -> "LabelOp":
         return self.intersection(other)
 
-    def __rand__(self, other: Any) -> "IndexerOp":
-        return IndexerOp(_intersection, "&", other, self)  # type:ignore
+    def __rand__(self, other: Any) -> "LabelOp":
+        return LabelOp(_intersection, "&", other, self)  # type:ignore
 
-    def __or__(self, other: Any) -> "IndexerOp":
+    def __or__(self, other: Any) -> "LabelOp":
         return self.union(other)
 
-    def __ror__(self, other: Any) -> "IndexerOp":
-        return IndexerOp(_union, "|", other, self)  # type:ignore
+    def __ror__(self, other: Any) -> "LabelOp":
+        return LabelOp(_union, "|", other, self)  # type:ignore
 
-    def __sub__(self, other: Any) -> "IndexerOp":
+    def __sub__(self, other: Any) -> "LabelOp":
         return self.difference(other)
 
-    def __rsub__(self, other: Any) -> "IndexerOp":
-        return IndexerOp(_difference, "-", other, self)  # type:ignore
+    def __rsub__(self, other: Any) -> "LabelOp":
+        return LabelOp(_difference, "-", other, self)  # type:ignore
 
-    def __xor__(self, other: Any) -> "IndexerOp":
+    def __xor__(self, other: Any) -> "LabelOp":
         return self.symmetric_difference(other)
 
-    def __rxor__(self, other: Any) -> "IndexerOp":
-        return IndexerOp(_symmetric_difference, "^", other, self)  # type:ignore
+    def __rxor__(self, other: Any) -> "LabelOp":
+        return LabelOp(_symmetric_difference, "^", other, self)  # type:ignore
 
-    def __invert__(self) -> "IndexerOp":
-        return IndexerInvertOp(self)  # type:ignore
+    def __invert__(self) -> "LabelOp":
+        return LabelInvertOp(self)  # type:ignore
 
 
 def _to_index(x: Union[Sequence, pd.Index]) -> pd.Index:
@@ -190,21 +227,27 @@ def _to_index(x: Union[Sequence, pd.Index]) -> pd.Index:
     return pd.Index(x)
 
 
-class IndexerOp(LogicalOp, IndexerOpsMixin):
+class LabelOp(LogicalOp, _LabelOpsMixin):
+    """
+    A logical operation between two `:class:`_LabelSelectorMixin` selectors
+    """
+
     def __init__(
         self,
         op: Callable[[Sequence, Optional[Sequence]], Sequence],
         op_name: str,
-        left: IndexerMixin,
-        right: Optional[IndexerMixin] = None,
+        left: _LabelSelectorMixin,
+        right: Optional[_LabelSelectorMixin] = None,
     ):
         left = self._validate_selector(left)
-        right = self._validate_selector(
-            right, getattr(left, "axis", "columns"), getattr(left, "level", None)
-        )
 
-        if left.axis != right.axis:
-            raise ValueError(f"{left} and {right} must target the same axis.")
+        if right is not None:
+            right = self._validate_selector(
+                right, getattr(left, "axis", "columns"), getattr(left, "level", None)
+            )
+
+            if left.axis != right.axis:
+                raise ValueError(f"{left} and {right} must target the same axis.")
 
         super().__init__(op, op_name, left, right)
         self.axis = left.axis
@@ -212,29 +255,34 @@ class IndexerOp(LogicalOp, IndexerOpsMixin):
     @staticmethod
     def _validate_selector(
         x: Any, axis: Union[int, str] = "columns", level: Optional[int] = None
-    ) -> IndexerMixin:
+    ) -> _LabelSelectorMixin:
         if not hasattr(x, "select"):
             return Exact(x, axis=axis, level=level)
-        return cast(IndexerMixin, x)
+        else:
+            return cast(_LabelSelectorMixin, x)
 
     def select(self, df: pd.DataFrame) -> Sequence:
         lvals = _to_index(self.left(df))
-        args = [lvals]
+        operands = [lvals]
 
         if self.right is not None:
             rvals = _to_index(self.right(df))
-            args.append(rvals)
+            operands.append(rvals)
 
-        selection = self.op(*args)
+        selection = self.op(*operands)
         return _validate_index_mask(selection)
 
 
-class Indexer(IndexerMixin, IndexerOpsMixin, ABC):
+class LabelSelector(_LabelSelectorMixin, _LabelOpsMixin, ABC):
     pass
 
 
-class IndexerInvertOp(IndexerOp):
-    def __init__(self, selector: Indexer):
+class LabelInvertOp(LabelOp):
+    """
+    Invert operation on a :class:`_LabelSelectorMixin`
+    """
+
+    def __init__(self, selector: LabelSelector):
         super().__init__(np.logical_not, "~", selector)
         self.axis = selector.axis
         self.level = selector.level
@@ -251,7 +299,42 @@ class IndexerInvertOp(IndexerOp):
 
         return _validate_index_mask(selection)
 
-class Exact(Indexer):
+
+@Substitution(axis=AXIS_DOC, level=LEVEL_DOC)
+class Exact(LabelSelector):
+    """
+    Select labels from a list,
+    sorted by the order they appear in the list.
+
+    Parameters
+    ----------
+    values: single label or list-like
+        Index or column labels to select
+    %(axis)s
+    %(level)s
+
+    Examples
+    --------
+    >>> df = pd.DataFrame({"A": [1, 2], "B": [3, 4]}, index=["a", "b"])
+    >>> df
+       A  B
+    a  1  3
+    b  2  4
+
+    Same as df[["B", "A"]]:
+
+    >>> df[Exact(["B", "A"])]
+       B  A
+    a  3  1
+    b  4  2
+
+    Same as df.loc[["b"]]:
+
+    >>> df.loc[Exact("b", axis="index")]
+       A  B
+    b  2  4
+    """
+
     def __init__(
         self,
         values: Union[Any, Sequence],
@@ -281,10 +364,10 @@ class Exact(Indexer):
 
 
 @Substitution(axis=AXIS_DOC, level=LEVEL_DOC)
-class AnyOf(Indexer):
+class AnyOf(LabelSelector):
     """
     Select labels from a list,
-    sorted by the order they appear in the:class:`~pandas.DataFrame`.
+    sorted by the order they appear in the :class:`~pandas.DataFrame`.
 
     ``AnyOf`` is similar to :meth:`pandas.Series.isin`.
 
@@ -297,7 +380,7 @@ class AnyOf(Indexer):
 
     Examples
     --------
-    >>> df = pd.DataFrame({'A': [1, 2], 'B': [3, 4]}, index=["a", "b"])
+    >>> df = pd.DataFrame({"A": [1, 2], "B": [3, 4]}, index=["a", "b"])
     >>> df
        A  B
     a  1  3
@@ -339,7 +422,7 @@ class AllOf(AnyOf):
 
     Examples
     --------
-    >>> df = pd.DataFrame({'A': [1, 2], 'B': [3, 4]}, index=["a", "b"])
+    >>> df = pd.DataFrame({"A": [1, 2], "B": [3, 4]}, index=["a", "b"])
     >>> df
        A  B
     a  1  3
@@ -363,14 +446,71 @@ class AllOf(AnyOf):
 
         return selected
 
+    def __invert__(self) -> LabelInvertOp:
+        values = self.values
 
-class Everything(Indexer):
+        class InvertAllOf(LabelInvertOp):
+            def select(self, df: pd.DataFrame) -> pd.Index:
+                selector = ~AnyOf(values)
+                return selector.select(df)
+
+        return InvertAllOf(self)
+
+
+@Substitution(axis=AXIS_DOC, level=LEVEL_DOC)
+class Everything(LabelSelector):
+    """
+    Select all labels.
+
+    Parameters
+    ----------
+    %(axis)s
+    %(level)s
+    """
 
     def _get_index_mask(self, index: pd.Index) -> np.ndarray:
         return np.arange(0, index.size)
 
 
-class IndexMask(Indexer):
+MASK_MI_DOC = (
+    "If applied to a :class:`~pandas.MultiIndex` with ``level=None``,"
+    " all the levels will be tested."
+)
+
+
+@Substitution(axis=AXIS_DOC, level=LEVEL_DOC, mask_mi=MASK_MI_DOC)
+class LabelMask(LabelSelector):
+    """
+    Select labels where the condition is True.
+
+    Parameters
+    ----------
+    cond: bool Series/DataFrame, array-like, or callable
+        Select labels where cond is True. If `cond` is a callable, it is computed on the
+        :class:`~pandas.Index` and should return a boolean array.
+    %(axis)s
+    %(level)s
+    kwargs:
+        If cond is a callable, keyword arguments to pass it.
+
+    Notes
+    -----
+    %(mask_mi)s
+
+    Examples
+    --------
+    >>> df = pd.DataFrame({"A": [1], "B": [1]})
+    >>> df
+       A  B
+    0  1  1
+    >>> df[LabelMask([True, False])]
+       A
+    0  1
+    >>> df[LabelMask(lambda x: x == "A")]
+       A
+    0  1
+    """
+
     def __init__(
         self,
         cond: Union[Sequence[bool], Callable[[pd.Index], Sequence[bool]]],
@@ -397,7 +537,7 @@ class IndexMask(Indexer):
         return func(index)
 
 
-class _IgnoreCase(IndexMask):
+class _IgnoreCase(LabelMask):
     def __init__(
         self,
         cond: Callable[[np.ndarray, str], np.ndarray],
@@ -416,7 +556,46 @@ class _IgnoreCase(IndexMask):
         return super()._get_index_mask(index)
 
 
+PAT_DOC = "pat:\n\tCharacter sequence. Regular expressions are not accepted."
+CASE_DOC = "default True\n\tIf True, case sensitive."
+
+
+@Substitution(
+    axis=AXIS_DOC, level=LEVEL_DOC, pat=PAT_DOC, case=CASE_DOC, mask_mi=MASK_MI_DOC
+)
 class StartsWith(_IgnoreCase):
+    """
+    Select labels that start with a prefix.
+
+    Parameters
+    ----------
+    %(pat)s
+    %(case)s
+    %(axis)s
+    %(level)s
+
+    See Also
+    --------
+    EndsWith: Same as StartsWith, but tests the end of string.
+
+    Notes
+    -----
+    %(mask_mi)s
+
+    Examples
+    --------
+    >>> df = pd.DataFrame({"bat": [1], "Bear": [1], "cat": [1]})
+    >>> df
+       bat  Bear  cat
+    0    1     1    1
+    >>> df[StartsWith("b")]
+       bat
+    0    1
+    >>> df[StartsWith("b", case=False)]
+       bat  Bear
+    0    1     1
+    """
+
     def __init__(
         self,
         pat: str,
@@ -429,7 +608,43 @@ class StartsWith(_IgnoreCase):
         )
 
 
+@Substitution(
+    axis=AXIS_DOC, level=LEVEL_DOC, pat=PAT_DOC, case=CASE_DOC, mask_mi=MASK_MI_DOC
+)
 class EndsWith(_IgnoreCase):
+    """
+    Select labels that end with a suffix.
+
+    Parameters
+    ----------
+    %(pat)s
+    %(case)s
+    na : default NaN
+        Object shown if element of the index is not a string.
+    %(axis)s
+    %(level)s
+
+    See Also
+    --------
+    StartsWith: Same as EndsWith, but tests the start of string.
+
+    Notes
+    -----
+    %(mask_mi)s
+
+    Examples
+    --------
+    >>> df = pd.DataFrame({"bat": [1], "Bear": [1], "caT": [1]})
+    >>> df
+       bat  Bear  caT
+    0    1     1    1
+    >>> df[EndsWith("t")]
+       bat
+    0    1
+    >>> df[EndsWith("t", case=False)]
+       bat  caT
+    0    1    1
+    """
 
     def __init__(
         self,
@@ -441,7 +656,48 @@ class EndsWith(_IgnoreCase):
         super().__init__(pd.core.strings.str_endswith, pat, case, axis, level, na=False)
 
 
-class Contains(IndexMask):
+FLAGS_DOC = (
+    "default 0, i.e no flags\n\tFlags to pass through to the re module, "
+    "e.g. :data:`re.IGNORECASE`."
+)
+
+
+@Substitution(
+    axis=AXIS_DOC, level=LEVEL_DOC, pat=PAT_DOC, case=CASE_DOC, flags=FLAGS_DOC
+)
+class Contains(LabelMask):
+    """
+    Select labels that contain a pattern or regular expression.
+
+    Parameters
+    ----------
+    %(pat)s
+    %(case)s
+    %(flags)s
+    regex : default True
+        If True, assumes that ``pat`` is a regular expression.
+        If False, treats that ``pat`` as a literal string.
+    %(axis)s
+    %(level)s
+
+    See Also
+    --------
+    :meth:`pandas.Series.str.contains`: Base implementation
+    Match: Analogous, but stricter, relying on :func:`re.match` instead of :func:`re.search`.
+
+    Examples
+    --------
+    >>> df = pd.DataFrame({"Mouse": [1], "dog": [1], "house and parrot": [1]})
+    >>> df
+       Mouse  dog  house and parrot
+    0      1    1                 1
+    >>> df[Contains("og", regex=False)]
+       dog
+    0    1
+    >>> df[Contains("house|dog")]
+       dog  house and parrot
+    0    1                 1
+    """
 
     def __init__(
         self,
@@ -464,7 +720,41 @@ class Contains(IndexMask):
         )
 
 
-class Match(IndexMask):
+@Substitution(
+    axis=AXIS_DOC, level=LEVEL_DOC, pat=PAT_DOC, case=CASE_DOC, flags=FLAGS_DOC
+)
+class Match(LabelMask):
+    """
+    Select labels that match a regular expression.
+
+    Parameters
+    ----------
+    %(pat)s
+    %(case)s
+    %(flags)s
+    %(axis)s
+    %(level)s
+
+    See Also
+    --------
+    :meth:`pandas.Series.str.match`: Base implementation
+    Contains: Analogous, but less strict, relying on :func:`re.search`
+    instead of :func:`re.match`.
+
+    Examples
+    --------"
+    >>> df = pd.DataFrame({"Mouse": [1], "dog": [1], "house and parrot": [1]})
+    >>> df
+       Mouse  dog  house and parrot
+    0      1    1                 1
+    >>> df[Match(".*og")]
+       dog
+    0    1
+    >>> df[Match("house|dog")]
+       dog  house and parrot
+    0    1                 1
+    """
+
     def __init__(
         self,
         pat: str,

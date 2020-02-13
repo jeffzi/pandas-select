@@ -4,14 +4,14 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from pandas_select.index import (
+from pandas_select import (
     AllOf,
     AnyOf,
     Contains,
     EndsWith,
     Everything,
     Exact,
-    IndexMask,
+    LabelMask,
     Match,
     StartsWith,
 )
@@ -352,7 +352,7 @@ def test_everything(df_mi):
     )
 
 
-# ##############################  IndexMask  ##############################
+# ##############################  LabelMask  ##############################
 
 
 @pytest.mark.parametrize(
@@ -364,7 +364,7 @@ def test_everything(df_mi):
     ],
 )
 def test_mask_col(df, cond, expected):
-    assert_col_indexer(df, IndexMask(cond), expected)
+    assert_col_indexer(df, LabelMask(cond), expected)
 
 
 @pytest.mark.parametrize(
@@ -379,7 +379,7 @@ def test_mask_col(df, cond, expected):
     ],
 )
 def test_mask_multi_index(df_mi, cond, expected):
-    assert_col_indexer(df_mi, IndexMask(cond), expected)
+    assert_col_indexer(df_mi, LabelMask(cond), expected)
 
 
 # ##############################  Pandas str  ##############################

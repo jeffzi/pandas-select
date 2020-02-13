@@ -1,15 +1,15 @@
 __version__ = "0.1.4"
 
-from .index import (
 from .bool import Anywhere, Everywhere
 from .column import AllBool, AllCat, AllNominal, AllNumber, AllStr, HasDtype
+from .label import (
     AllOf,
     AnyOf,
     Contains,
     EndsWith,
     Everything,
     Exact,
-    IndexMask,
+    LabelMask,
     Match,
     StartsWith,
 )
@@ -31,7 +31,7 @@ __all__ = [
     "EndsWith",
     "Everything",
     "Exact",
-    "IndexMask",
+    "LabelMask",
     "Match",
     "StartsWith",
     # where
