@@ -17,4 +17,6 @@ def to_seq(x: Union[Any, typing.Sequence]) -> typing.Sequence:
 
 
 def to_set(x: Any) -> Set:
+    if isinstance(x, set):
+        return x
     return set(to_seq(x))
