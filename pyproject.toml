@@ -13,14 +13,13 @@ python = "^3.6.1"
 pandas = ">=0.25.1"
 
 [tool.poetry.dev-dependencies]
-black = {version = ">=19.10b0", python = " >=3.6"}
-isort = ">=4.3.21"
-flake8 = ">=3.7.9"
-flake8-bugbear = ">=19.8.0"
-pytest = ">=5.0.0"
+black = {version = ">=19.10b0", python = ">=3.6"}
 mypy = "^0.761"
-tox = ">=3.8.4"
+wemake-python-styleguide = "^0.13.4"
+
+pytest = "^5.3"
 scikit-learn = ">=0.20"
+tox = "^3.14.4"
 
 [tool.black]
 line-length = 88
