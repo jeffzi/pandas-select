@@ -2,7 +2,7 @@
 
 from collections import Counter
 from functools import partial
-from typing import Any, Callable, Optional, Sequence, Union, cast
+from typing import Any, Callable, Iterable, Optional, Union, cast
 
 import numpy as np
 import pandas as pd
@@ -37,7 +37,7 @@ def _validate_axis(axis: Axis) -> Axis:
     return axis
 
 
-def _validate_indexer(indexer: Sequence) -> Sequence:
+def _validate_indexer(indexer: Iterable) -> Iterable:
     """Ensure `indexer` can be used as an indexer on another index.
     https://pandas.pydata.org/pandas-docs/stable/user_guide/missing_data.html
     """
@@ -62,7 +62,7 @@ class _LabelSelectorMixin(PrettyPrinter):
         self.axis = _validate_axis(axis)
         self.level = level
 
-    def __call__(self, df: pd.DataFrame) -> pd.Index:
+    def __call__(self, df: pd.DataFrame) -> Iterable:
         labels = df._get_axis(self.axis)  # noqa: WPS437
         if self.level is not None:
             index = labels.get_level_values(self.level)
@@ -76,7 +76,7 @@ class _LabelSelectorMixin(PrettyPrinter):
 
         return _validate_indexer(selection)
 
-    def _get_indexer(self, index: pd.Index) -> Sequence:
+    def _get_indexer(self, index: pd.Index) -> Iterable:
         raise NotImplementedError()
 
 
@@ -153,11 +153,11 @@ class _LabelOpsMixin:
         return LabelInvertOp(self)  # type:ignore
 
 
-def _to_index(obj: Union[Sequence, pd.Index]) -> pd.Index:
+def _to_index(obj: Union[Iterable, pd.Index]) -> pd.Index:
     if isinstance(obj, pd.Index):
         return obj
 
-    obj = iterutils.to_seq(obj)
+    obj = iterutils.to_list(obj)
     if isinstance(obj[0], tuple):
         return pd.MultiIndex.from_tuples(obj)
 
@@ -169,7 +169,7 @@ class LabelOp(LogicalOp, _LabelOpsMixin):
 
     def __init__(
         self,
-        op: Callable[[Sequence, Optional[Sequence]], Sequence],
+        op: Callable[[Iterable, Optional[Iterable]], Iterable],
         op_name: str,
         left: _LabelSelectorMixin,
         right: Optional[_LabelSelectorMixin] = None,
@@ -187,7 +187,7 @@ class LabelOp(LogicalOp, _LabelOpsMixin):
         super().__init__(op, op_name, left, right)
         self.axis = left.axis
 
-    def __call__(self, df: pd.DataFrame) -> Sequence:
+    def __call__(self, df: pd.DataFrame) -> Iterable:
         lvals = _to_index(self.left(df))
         operands = [lvals]
 
@@ -269,22 +269,22 @@ class Exact(LabelSelector):
 
     def __init__(
         self,
-        values: Union[Any, Sequence],
+        values: Union[Any, Iterable],
         axis: Axis = "columns",
         level: Optional[int] = None,
     ):
         super().__init__(axis, level)
         self.values = self._validate_values(values)
 
-    def _validate_values(self, values: Union[Any, Sequence]) -> Sequence:
-        values = iterutils.to_seq(values)
+    def _validate_values(self, values: Union[Any, Iterable]) -> Iterable:
+        values = iterutils.to_list(values)
         counts = Counter(values)
         dups = [val for val, cnt in counts.items() if cnt > 1]
         if dups:
             raise ValueError(f"Found duplicated values")
         return values
 
-    def _get_indexer(self, index: pd.Index) -> Union[Sequence[int], np.ndarray]:
+    def _get_indexer(self, index: pd.Index) -> Union[Iterable[int], np.ndarray]:
         indexer = index.get_indexer_for(self.values)
 
         missing_mask = indexer == -1
@@ -400,7 +400,7 @@ MASK_MI_DOC = (
     + " all the levels will be tested."
 )
 
-IndexMask = Callable[[pd.Index], Sequence[bool]]
+IndexMask = Callable[[pd.Index], Iterable[bool]]
 
 
 @Substitution(axis=AXIS_DOC, level=LEVEL_DOC, mask_mi=MASK_MI_DOC)
@@ -439,7 +439,7 @@ class LabelMask(LabelSelector):
 
     def __init__(
         self,
-        cond: Union[Sequence[bool], IndexMask],
+        cond: Union[Iterable[bool], IndexMask],
         axis: Axis = "columns",
         level: Optional[int] = None,
         **kwargs: Any,
@@ -448,7 +448,7 @@ class LabelMask(LabelSelector):
         self.cond = cond
         self.kwargs = kwargs
 
-    def _get_indexer(self, index: pd.Index) -> Sequence[bool]:
+    def _get_indexer(self, index: pd.Index) -> Iterable[bool]:
         if not callable(self.cond):
             return self.cond
 

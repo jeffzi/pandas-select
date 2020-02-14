@@ -2,6 +2,7 @@
 
 import operator
 
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -98,13 +99,29 @@ def test_multiple_operators(where_df):
     assert_frame_equal(where_df.loc[["mixed"]], actual)
 
 
+@pytest.mark.parametrize(
+    "op, expected",
+    [
+        (operator.and_, ["mixed"]),
+        (operator.or_, ["pos", "mixed"]),
+        (operator.xor, ["pos"]),
+    ],
+)
+def test_where_ops_cast_array(where_df, op, expected):
+    left = Anywhere(lambda x: x == 1)
+    right = [False, False, True]
+    assert_frame_equal(where_df.loc[expected], where_df[op(left, right)])
+
+    right = np.asarray(right)
+    assert_frame_equal(where_df.loc[expected], where_df[op(left, right)])
+
+
 def test_where_invalid_ops(where_df):
     selector = Anywhere(lambda x: x > 99)
-    msg = "does not support logical operations."
 
-    with pytest.raises(TypeError, match=msg):
+    with pytest.raises(TypeError):
         where_df["a" & selector]
-    with pytest.raises(TypeError, match=msg):
+    with pytest.raises(TypeError):
         "a" | selector
-    with pytest.raises(TypeError, match=msg):
+    with pytest.raises(TypeError):
         "a" ^ selector

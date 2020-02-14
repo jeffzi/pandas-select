@@ -1,18 +1,19 @@
 # -*- coding: utf-8 -*-
 import typing
 
-from collections.abc import Sequence
-from typing import Any, Set, Tuple, Union
+from typing import Any, List, Set, Tuple, Union
 
 import pandas as pd
 
+from pandas.api.types import is_list_like
 
-def to_seq(obj: Union[Any, typing.Sequence]) -> typing.Sequence:
-    """Wrap the object in a list if it is not already sequence-like.
 
-    Strings and tuples are not considered sequence-like.
+def to_list(obj: Any) -> List:
+    """Wrap the object in a list if it is not already list-like.
+
+    Strings and tuples are not considered list-like.
     """
-    if isinstance(obj, Sequence) and not isinstance(obj, (str, tuple)):
+    if is_list_like(obj) and not isinstance(obj, (str, tuple)):
         return obj
     return [obj]
 
@@ -21,7 +22,7 @@ def to_set(obj: Any) -> Set:
     """Wrap the object in a set if it is not already a set."""
     if isinstance(obj, set):
         return obj
-    return set(to_seq(obj))
+    return set(to_list(obj))
 
 
 # flake8: noqa: C901, WPS210, WPS221, WPS435, WPS437, WPS507

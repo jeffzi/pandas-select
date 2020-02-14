@@ -1,18 +1,18 @@
 # -*- coding: utf-8 -*-
 
 from abc import ABC, abstractmethod
-from typing import Any, Callable, Iterable, List, Optional, Sequence, Union
+from typing import Any, Callable, Iterable, Optional, Union
 
 import numpy as np
 import pandas as pd
 
-from pandas.api.types import is_bool_dtype
+from pandas.api.types import is_bool_dtype, is_list_like
 
 from pandas_select import iterutils
 from pandas_select.base import LogicalOp, PrettyPrinter, Selector
 
 
-Cond = Callable[[pd.Series], Sequence[bool]]
+Cond = Callable[[pd.Series], Iterable[bool]]
 Columns = Union[str, Iterable[str], Callable]
 
 
@@ -26,7 +26,7 @@ class _BoolIndexerMixin(PrettyPrinter, ABC):
         else:
             self.columns = columns and iterutils.to_set(columns)  # type:ignore
 
-    def __call__(self, df: pd.DataFrame) -> Sequence[bool]:
+    def __call__(self, df: pd.DataFrame) -> Iterable[bool]:
         """Apply the condition to each column.
 
         Return a boolean array with size `df.shape[0]`.
@@ -37,7 +37,7 @@ class _BoolIndexerMixin(PrettyPrinter, ABC):
         return self._join(masks)
 
     @abstractmethod
-    def _join(self, df: pd.DataFrame) -> Sequence[bool]:
+    def _join(self, df: pd.DataFrame) -> Iterable[bool]:
         raise NotImplementedError()
 
 
@@ -79,14 +79,15 @@ class _BoolOpsMixin:
 
 
 class _BoolMask(PrettyPrinter, _BoolOpsMixin):
-    def __init__(self, mask: Sequence[bool]):
-        self.mask = mask
+    def __init__(self, mask: Iterable[bool]):
+        self.mask = np.asarray(mask)
 
-    def __call__(self, df: pd.DataFrame) -> Sequence[bool]:
+    def __call__(self, df: pd.DataFrame) -> Iterable[bool]:
         return self.mask
 
 
 BoolOperation = Callable[[np.ndarray, Optional[np.ndarray]], np.ndarray]
+BoolOperand = Union[Selector, Iterable[bool]]
 
 
 class BoolOp(LogicalOp, _BoolOpsMixin):
@@ -96,18 +97,24 @@ class BoolOp(LogicalOp, _BoolOpsMixin):
         self,
         op: BoolOperation,
         op_name: str,
-        left: Selector,
-        right: Optional[Selector] = None,
+        left: BoolOperand,
+        right: Optional[BoolOperand] = None,
     ):
-        bool_selectors: List[Optional[BoolIndexer]] = []
-        for sel in (left, right):
-            if sel is not None and not isinstance(sel, _BoolOpsMixin):
-                if not is_bool_dtype(sel):
-                    raise TypeError(f"{sel} does not support logical operations.")
-                sel = _BoolMask(sel)  # type: ignore
-            bool_selectors.append(sel)
-
+        bool_selectors = [self._validate_operand(operand) for operand in (left, right)]
         super().__init__(op, op_name, *bool_selectors)  # type:ignore
+
+    def _validate_operand(self, sel: Any) -> Union[Selector, Iterable[bool]]:
+        if sel is None or callable(sel):
+            return sel
+
+        if not is_list_like(sel):
+            raise TypeError("Operand does not support logical operations.")
+
+        sel = np.asarray(sel)
+        if not is_bool_dtype(sel):
+            raise TypeError(f"Operand is not boolean dtype.")
+
+        return _BoolMask(sel)
 
 
 class BoolIndexer(_BoolIndexerMixin, _BoolOpsMixin, ABC):

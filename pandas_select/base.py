@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
 from inspect import signature
-from typing import Any, Callable, List, Optional, Sequence
+from typing import Any, Callable, Iterable, List, Optional
 
 import pandas as pd
 
 
-Selector = Callable[[pd.DataFrame], Sequence]
+Selector = Callable[[pd.DataFrame], Iterable]
 
 
 class PrettyPrinter:
@@ -52,7 +52,7 @@ class LogicalOp:
 
     def __init__(
         self,
-        op: Callable[[Sequence, Optional[Sequence]], Sequence],
+        op: Callable[[Iterable, Optional[Iterable]], Iterable],
         op_name: str,
         left: Selector,
         right: Optional[Selector] = None,
@@ -62,7 +62,7 @@ class LogicalOp:
         self.left = left
         self.right = right
 
-    def __call__(self, df: pd.DataFrame) -> Sequence:
+    def __call__(self, df: pd.DataFrame) -> Iterable:
         operands = [self.left(df)]
         if self.right is not None:
             operands.append(self.right(df))
