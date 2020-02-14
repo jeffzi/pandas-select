@@ -25,7 +25,7 @@ class ColumnSelector:
             raise ValueError("ColumnSelector can only be applied to a DataFrame.")
         cols = self.selector(df)
         try:
-            # IndexerMixin returns a pandas.Index
-            return cols.tolist()
+            # LabelSelector may return a pandas.Index
+            return cols.tolist()  # type: ignore
         except AttributeError:
             return list(cols)
