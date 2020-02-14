@@ -1,17 +1,19 @@
+# -*- coding: utf-8 -*-
+
 import pytest
 
-from pandas_select._base import LogicalOp, Selector
+from pandas_select.base import LogicalOp, PrettyPrinter
 
 from .utils import pp_param
 
 
-class DummySelector(Selector):
+class DummySelector(PrettyPrinter):
     def __init__(self, b, a=1, optional=None, ignored=None):
         self.a = a
         self.b = b
         self.optional = optional
 
-    def select(self, df):
+    def __call__(self, df):
         return df.columns.tolist()
 
 

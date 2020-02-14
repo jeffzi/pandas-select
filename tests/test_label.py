@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import operator
 
 import numpy as np
@@ -228,7 +230,7 @@ def test_incompatible_axis(df_mi, op):
 def test_multiple_col_operators(df_mi):
     select_str_number = Exact("string", level=0) | Exact("number", level=1)
     drop_int = ~Exact("int", level=0)
-    actual = (select_str_number & drop_int).select(df_mi).tolist()
+    actual = (select_str_number & drop_int)(df_mi).tolist()
 
     expected = [("string", "nominal"), ("float", "number")]
     assert actual == expected
@@ -238,7 +240,7 @@ def test_multiple_row_operators(df_mi):
     drop_1 = ~Exact(1, axis=0, level=1)
     select_1 = Exact("A", axis=0, level=0) ^ Exact(1, axis=0, level=1)
 
-    assert (drop_1 | select_1).select(df_mi).tolist() == [("A", 0)]
+    assert (drop_1 | select_1)(df_mi).tolist() == [("A", 0)]
 
 
 @pytest.mark.parametrize(

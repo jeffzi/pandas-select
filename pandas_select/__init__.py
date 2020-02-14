@@ -1,8 +1,16 @@
-__version__ = "0.1.5"
+# -*- coding: utf-8 -*-
 
-from .bool import Anywhere, Everywhere
-from .column import AllBool, AllCat, AllNominal, AllNumber, AllStr, HasDtype
-from .label import (
+from pandas_select.__version__ import __version__
+from pandas_select.bool import Anywhere, Everywhere
+from pandas_select.column import (
+    AllBool,
+    AllCat,
+    AllNominal,
+    AllNumber,
+    AllStr,
+    HasDtype,
+)
+from pandas_select.label import (
     AllOf,
     AnyOf,
     Contains,
@@ -13,30 +21,4 @@ from .label import (
     Match,
     StartsWith,
 )
-from .sklearn import ColumnSelector
-
-
-__all__ = [
-    # column
-    "AllBool",
-    "AllCat",
-    "AllNominal",
-    "AllNumber",
-    "AllStr",
-    "HasDtype",
-    # index
-    "AnyOf",
-    "AllOf",
-    "Contains",
-    "EndsWith",
-    "Everything",
-    "Exact",
-    "LabelMask",
-    "Match",
-    "StartsWith",
-    # where
-    "Anywhere",
-    "Everywhere",
-    # sklearn
-    "ColumnSelector",
-]
+from pandas_select.sklearn import ColumnSelector
