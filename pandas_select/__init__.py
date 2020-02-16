@@ -6,7 +6,7 @@ from pandas_select.column import (
     AllBool,
     AllCat,
     AllNominal,
-    AllNumber,
+    AllNumeric,
     AllStr,
     HasDtype,
 )

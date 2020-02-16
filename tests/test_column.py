@@ -7,7 +7,7 @@ from pandas_select.column import (
     AllBool,
     AllCat,
     AllNominal,
-    AllNumber,
+    AllNumeric,
     AllStr,
     HasDtype,
 )
@@ -58,7 +58,7 @@ def test_has_dtype(df, dtypes, expected):
 
 
 def test_all_numeric(df):
-    assert_col_indexer(df, AllNumber(), ["int", "float"])
+    assert_col_indexer(df, AllNumeric(), ["int", "float"])
 
 
 def test_all_bool(df):

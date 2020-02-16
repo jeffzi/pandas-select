@@ -29,24 +29,25 @@ class HasDtype(LabelSelector):
 
     Notes
     -----
-    * To select all *numeric* types, use ``numpy.number`` or ``'number'``
-      or `AllNumber()`
-    * To select strings you must use the ``object`` dtype, but note that
-      this will return *all* object dtype columns
+    * To select all *numeric* types, use ``numpy.number``, ``'number'``
+      or `:class:`AllNumeric`.
+    * To select strings you must use the ``object``, ``string`` dtype if pandas
+      version > 1.0.0, or or :class:`AllStr`
     * See the `numpy dtype hierarchy
       <http://docs.scipy.org/doc/numpy/reference/arrays.scalars.html>`__
     * To select datetimes, use :class:`numpy.datetime64`, ``'datetime'`` or
-      ``'datetime64'``
+      ``'datetime64'``.
     * To select timedeltas, use :class:`numpy.timedelta64`, ``'timedelta'`` or
-      ``'timedelta64'``
-    * To select Pandas categorical dtypes, use ``'category'``
+      ``'timedelta64'``.
+    * To select Pandas categorical dtypes, use ``'category'`` or :class:`AllCat`.
     * To select Pandas datetimetz dtypes, use ``'datetimetz'``
-      or ``'datetime64[ns, tz]'``
+      or ``'datetime64[ns, tz]'``.
 
     See Also
     --------
-    AllBool, AllNumber, AllNominal
-    :meth:`pandas.DataFrame.select_dtypes`
+    :meth:`pandas.DataFrame.select_dtypes`: base implementation
+
+    AllBool, AllNumeric, AllNominal
 
     Examples
     --------
@@ -80,7 +81,7 @@ class HasDtype(LabelSelector):
         return df_row.select_dtypes(self.include, self.exclude).columns
 
 
-class AllNumber(HasDtype):
+class AllNumeric(HasDtype):
     """
     Select numeric columns.
 
@@ -97,7 +98,7 @@ class AllNumber(HasDtype):
        a      b    c
     0  1   True  1.0
     1  2  False  2.0
-    >>> df[AllNumber()]
+    >>> df[AllNumeric()]
        a    c
     0  1  1.0
     1  2  2.0
@@ -108,7 +109,7 @@ class AllNumber(HasDtype):
 
 
 class AllBool(HasDtype):
-    """Select numeric columns.
+    """Select boolean columns.
 
     See Also
     --------
@@ -138,7 +139,7 @@ class AllCat(HasDtype):
 
     Parameters
     ----------
-    ordered: default `None`
+    ordered: default None
        Whether to filter ordered categorical, `None` to select all categorical columns.
 
     See Also
@@ -188,22 +189,22 @@ def _get_str_dtypes(strict: bool) -> List[str]:
 
 
 class AllStr(HasDtype):
-    """Select object and string columns.
+    """Select columns with dtype ``object``, and ``string`` if pandas version >= 1.0.0.
 
     Parameters
     ----------
-    strict: default `False`
-       If True, filter out `object. It should not be set to True if ``pandas < 1.0.0``.
+    strict: default False
+       If True, filter out `object` dtypes.
 
     Raises
     ------
-    ValueError:
+    ValueError
         If pandas version < 1.0.0 and ``strict = True``
 
     Notes
     -----
-    Be aware that `strict=False`, the default,  will select **all** ``object``
-    dtype columns. Columns with mixed types are stored with the object dtype !
+    Be aware that ``strict=False``, the default,  will select **all** `object`
+    dtype columns. Columns with mixed types are stored with the `object` dtype!
 
     See Also
     --------
@@ -243,8 +244,8 @@ class AllStr(HasDtype):
 class AllNominal(HasDtype):
     """Select nominal columns.
 
-    Columns with the following dtypes are considered nominal: `category`, `object`
-    and `string` if pandas version >= 1.0.0.
+    Columns with the following dtypes are considered nominal: ``category``, ``object``,
+    and ``string`` if pandas version >= 1.0.0.
 
     See Also
     --------

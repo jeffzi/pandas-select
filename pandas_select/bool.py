@@ -91,7 +91,7 @@ BoolOperand = Union[Selector, Iterable[bool]]
 
 
 class BoolOp(LogicalOp, _BoolOpsMixin):
-    """A logical operation between two ``Where`` selectors."""
+    """A logical operation between two `Where` selectors."""
 
     def __init__(
         self,
@@ -122,8 +122,16 @@ class BoolIndexer(_BoolIndexerMixin, _BoolOpsMixin, ABC):
 
 
 class Anywhere(BoolIndexer):
-    """
-    Filter rows where any column matches a condition.
+    """Filter rows where *any* column matches a condition.
+
+    Parameters
+    ----------
+    cond: callable or boolean array-like
+        Select labels where `cond` is True. If `cond` is a callable, it is computed on
+        each column and should return a boolean array.
+
+    columns: optional
+        Subset of columns on which to apply `cond`.
 
     Examples
     --------
@@ -147,8 +155,16 @@ class Anywhere(BoolIndexer):
 
 
 class Everywhere(BoolIndexer):
-    """
-    Filter rows where all columns match a condition.
+    """Filter rows where *all* columns match a condition.
+
+    Parameters
+    ----------
+    cond: callable or boolean array-like
+        Select labels where `cond` is True. If `cond` is a callable, it is computed on
+        each column and should return a boolean array.
+
+    columns: optional
+        Subset of columns on which to apply `cond`.
 
     Examples
     --------

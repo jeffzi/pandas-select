@@ -17,14 +17,13 @@ from pandas_select.bool import Everywhere
 Axis = Union[int, str]
 
 AXIS_DOC = (
-    "axis: default columns\n"
+    "axis: default 'columns'\n"
     + "\tAxis along which the function is applied, {0 or 'index', 1 or 'columns'}\n"
 )
 
 LEVEL_DOC = (
     "level: optional\n"
-    + "\t`level` is either the integer position of the level, "
-    + "or the name of the level.\n"
+    + "\tEither the integer position of the level or its name.\n"
     + "\tIt should only be set if ``axis`` targets a MultiIndex, "
     + "otherwise a :exc:`IndexError` will be raised.\n"
 )
@@ -110,7 +109,7 @@ class _LabelOpsMixin:
         return LabelOp(_intersection, "&", self, other)  # type:ignore
 
     def union(self, other: Any) -> "LabelOp":
-        """Select elements in the left side but not in right side."""
+        """Select elements in the left side but not in the right side."""
         return LabelOp(_union, "|", self, other)  # type:ignore
 
     def difference(self, other: Any) -> "LabelOp":
@@ -245,6 +244,11 @@ class Exact(LabelSelector):
     %(axis)s
     %(level)s
 
+    Raises
+    ------
+    ValueError:
+        If ``values`` contains duplicates.
+
     Examples
     --------
     >>> df = pd.DataFrame({"A": [1, 2], "B": [3, 4]}, index=["a", "b"])
@@ -252,16 +256,12 @@ class Exact(LabelSelector):
        A  B
     a  1  3
     b  2  4
-
-    Same as df[["B", "A"]]:
-
+    # Same as df[["B", "A"]]:
     >>> df[Exact(["B", "A"])]
        B  A
     a  3  1
     b  4  2
-
-    Same as df.loc[["b"]]:
-
+    # Same as df.loc[["b"]]:
     >>> df.loc[Exact("b", axis="index")]
        A  B
     b  2  4
@@ -311,6 +311,10 @@ class AnyOf(LabelSelector):
     %(axis)s
     %(level)s
 
+    Notes
+    -----
+    ``AnyOf`` is similar to :meth:`pandas.Series.isin`.
+
     Examples
     --------
     >>> df = pd.DataFrame({"A": [1, 2], "B": [3, 4]}, index=["a", "b"])
@@ -318,7 +322,7 @@ class AnyOf(LabelSelector):
        A  B
     a  1  3
     b  2  4
-    >>> df[AnyOf(["B", "A"])]
+    >>> df[AnyOf(["B", "A", "invalid"])]
        A  B
     a  1  3
     b  2  4
@@ -417,7 +421,7 @@ class LabelMask(LabelSelector):
     %(axis)s
     %(level)s
     kwargs:
-        If cond is a callable, keyword arguments to pass it.
+        If ``cond`` is a :func:`callable`, keyword arguments to pass to it.
 
     Notes
     -----
@@ -483,7 +487,7 @@ class _IgnoreCase(LabelMask):
 
 
 PAT_DOC = "pat:\n\tCharacter sequence. Regular expressions are not accepted."
-CASE_DOC = "default True\n\tIf True, case sensitive."
+CASE_DOC = "case: default True\n\tIf True, case sensitive."
 
 
 @Substitution(
@@ -502,7 +506,7 @@ class StartsWith(_IgnoreCase):
 
     See Also
     --------
-    EndsWith: Same as StartsWith, but tests the end of string.
+    EndsWith: Same as `StartsWith`, but tests the end of string.
 
     Notes
     -----
@@ -544,14 +548,12 @@ class EndsWith(_IgnoreCase):
     ----------
     %(pat)s
     %(case)s
-    na : default NaN
-        Object shown if element of the index is not a string.
     %(axis)s
     %(level)s
 
     See Also
     --------
-    StartsWith: Same as EndsWith, but tests the start of string.
+    StartsWith: Same as `EndsWith`, but tests the start of string.
 
     Notes
     -----
@@ -582,7 +584,7 @@ class EndsWith(_IgnoreCase):
 
 
 FLAGS_DOC = (
-    "default 0, i.e no flags\n\tFlags to pass through to the re module, "
+    "flags: default 0, i.e no flags\n\tFlags to pass through to the re module, "
     + "e.g. :data:`re.IGNORECASE`."
 )
 
@@ -608,7 +610,7 @@ class Contains(LabelMask):
     --------
     :meth:`pandas.Series.str.contains`: Base implementation
     Match: Analogous, but stricter, relying on :func:`re.match` instead of
-    :func:`re.search`.
+        :func:`re.search`.
 
     Examples
     --------
@@ -662,7 +664,7 @@ class Match(LabelMask):
     --------
     :meth:`pandas.Series.str.match`: Base implementation
     Contains: Analogous, but less strict, relying on :func:`re.search`
-    instead of :func:`re.match`.
+        instead of :func:`re.match`.
 
     Examples
     --------"
