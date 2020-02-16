@@ -3,7 +3,7 @@
 ==================================================
 
 .. image:: https://readthedocs.org/projects/project-template-python/badge/?version=latest
-   :target: https://pandas-select-python.readthedocs.io/
+   :target: https://pandas-select.readthedocs.io/
    :alt: Documentation status
 
 .. image:: https://img.shields.io/pypi/v/pandas-select.svg
@@ -95,3 +95,12 @@ Design goals
         (OneHotEncoder(), ColumnSelector(AllNominal() | AllBool() | "Generation"))
     )
     ct.fit_transform(df)
+
+Project Information
+-------------------
+
+``pandas-select`` is released under the `BS3 <https://choosealicense.com/licenses/bsd-3-clause/>`_ license,
+its documentation lives at `Read the Docs <https://pandas-select.readthedocs.io/>`_,
+the code on `GitHub <https://github.com/jeffzi/pandas-select>`_,
+and the latest release on `PyPI <https://pypi.org/project/pandas-select/>`_.
+It is tested on Python 3.6+.
