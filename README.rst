@@ -1,6 +1,18 @@
-========================================
-``pandas-select``: Supercharged indexing
-========================================
+==================================================
+``pandas-select``: Supercharged DataFrame indexing
+==================================================
+
+.. image:: https://readthedocs.org/projects/project-template-python/badge/?version=latest
+   :target: https://pandas-select-python.readthedocs.io/
+   :alt: Documentation status
+
+.. image:: https://img.shields.io/pypi/v/pandas-select.svg
+   :target: https://pypi.org/project/pandas-select/
+   :alt: Latest PyPI version
+
+.. image:: https://img.shields.io/pypi/pyversions/pandas-select.svg
+   :target: https://pypi.org/project/pandas-select/
+   :alt: Python versions supported
 
 .. image:: https://img.shields.io/badge/code%20style-black-000000.svg
    :target: https://github.com/psf/black
@@ -35,8 +47,9 @@ Design goals
 
 .. why-begin
 
-* Fully compatible with :py:class:`pandas.DataFrame` ``[]`` and
-  :py:obj:`~pandas.DataFrame.loc` accessors.
+* Fully compatible with `pandas.DataFrame <https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html>`_
+  ``[]`` and `pandas.DataFrame.loc <https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.loc.html?highlight=loc#pandas.DataFrame.loc>`_
+  accessors.
 
 * Emphasise readability and conciseness by cutting boilerplate:
 
@@ -73,7 +86,7 @@ Design goals
 
 .. code-block:: python
 
-    from pandas_select import AnyOf, AllBool, AllNominal, AllNumeric
+    from pandas_select import AnyOf, AllBool, AllNominal, AllNumeric, ColumnSelector
     from sklearn.compose import make_column_transformer
     from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
