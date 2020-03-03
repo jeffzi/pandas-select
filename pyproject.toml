@@ -43,7 +43,7 @@ docs = ["sphinx", "sphinxcontrib-contentui", "ipython", "sklearn"]
 [tool.poetry.dev-dependencies]
 black = {version = ">=19.10b0", python = ">=3.6"}
 mypy = "^0.761"
-wemake-python-styleguide = "^0.13.4"
+pre-commit = "^2.1.0"
 
 pytest = "^5.3"
 scikit-learn = ">=0.20"
