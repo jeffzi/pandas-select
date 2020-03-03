@@ -118,7 +118,7 @@ Hierarchical indexing
 In vanilla pandas `indexing with hierarchical index <https://pandas.pydata.org/pandas-docs/stable/user_guide/advanced.html#advanced-indexing-with-hierarchical-index>`_
 is challenging as soon as you step out of slicers or exact selection.
 
-:ref:`label-selectors` are compatible with :py:class:`~pd.MultiIndex` out of the box.
+:ref:`label-selectors` are compatible with :py:class:`~pandas.MultiIndex` out of the box.
 They also have a ``level`` argument to target a specific level in the hierarchy.
 
 .. ipython:: python
@@ -170,7 +170,7 @@ There is also a helper :func:`sklearn.compose.make_column_selector` to map colum
 based on datatype or the column names with a regex.
 
 Similarly to :func:`sklearn.compose.make_column_selector`, `pandas-select` selectors can
-be fed to :class:`sklearn.compose.ColumnTransformer` via the wrapper :class:`ColumnSelector`.
+be fed to :class:`sklearn.compose.ColumnTransformer` via the wrapper :class:`~pandas_select.sklearn.ColumnSelector`.
 
 `pandas-select` makes the intent clearer and enables for more complex selection.
 
@@ -219,7 +219,7 @@ Order
 -----
 
 Selectors preserve the column order found in the DataFrame, except
-for the :py:class:`Exact` selector.
+for the :class:`~pandas_select.label.Exact` selector.
 
 .. ipython:: python
 
