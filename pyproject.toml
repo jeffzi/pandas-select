@@ -136,6 +136,15 @@ commands =
     coverage html
     coverage report
 
+[testenv:coverage-ci]
+passenv = CODECOV_TOKEN
+extras = tests
+deps = codecov
+commands =
+    coverage run --source pandas_select/ -m pytest --basetemp={envtmpdir}
+    coverage xml
+    codecov
+
 [testenv:package]
 skip_install = True
 whitelist_externals = poetry
