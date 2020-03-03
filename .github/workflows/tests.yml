@@ -38,7 +38,7 @@ jobs:
         if: startsWith(matrix.toxenv, 'py38')
       - name: Install tox
         run: python -m pip install tox
-      - name: Run ${{ matrix.toxenv }}
+      - name: Run tests
         run: python -m tox -e ${{ matrix.toxenv }}
 
   coverage:

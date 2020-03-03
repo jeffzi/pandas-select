@@ -2,6 +2,14 @@
 ``pandas-select``: Supercharged DataFrame indexing
 ==================================================
 
+.. image:: https://github.com/jeffzi/pandas-select/workflows/tests/badge.svg
+   :target: https://github.com/jeffzi/pandas-select/actions
+   :alt: Github Actions status
+
+.. image:: https://codecov.io/gh/jeffzi/pandas-select/branch/master/graph/badge.svg
+   :target: https://codecov.io/gh/jeffzi/pandas-select
+   :alt: Coverage
+
 .. image:: https://readthedocs.org/projects/project-template-python/badge/?version=latest
    :target: https://pandas-select.readthedocs.io/
    :alt: Documentation status
@@ -14,12 +22,13 @@
    :target: https://pypi.org/project/pandas-select/
    :alt: Python versions supported
 
+.. image:: https://img.shields.io/pypi/l/ansicolortags.svg
+   :target: https://pypi.python.org/pypi/ansicolortags/
+   :alt: License
+
 .. image:: https://img.shields.io/badge/code%20style-black-000000.svg
    :target: https://github.com/psf/black
    :alt: Code style: black
-
-.. image:: https://img.shields.io/badge/style-wemake-000000.svg
-   :target: https://github.com/wemake-services/wemake-python-styleguide
 
 ``pandas-select`` is a collection of DataFrame selectors that facilitates indexing
 and selecting data, fully compatible with pandas vanilla indexing.
