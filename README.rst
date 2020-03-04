@@ -22,8 +22,8 @@
    :target: https://pypi.org/project/pandas-select/
    :alt: Python versions supported
 
-.. image:: https://img.shields.io/pypi/l/ansicolortags.svg
-   :target: https://pypi.python.org/pypi/ansicolortags/
+.. image:: https://img.shields.io/pypi/l/pandas-select.svg
+   :target: https://pypi.python.org/pypi/pandas-select/
    :alt: License
 
 .. image:: https://img.shields.io/badge/code%20style-black-000000.svg

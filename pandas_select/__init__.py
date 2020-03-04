@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from pandas_select.__version__ import __version__
+from pandas_select._version import __version__
 from pandas_select.bool import Anywhere, Everywhere
 from pandas_select.column import (
     AllBool,

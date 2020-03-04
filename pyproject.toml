@@ -83,22 +83,22 @@ exclude = '''
 '''
 
 [tool.isort]
-atomic=true
-balanced_wrapping=true
-force_grid_wrap=0
-include_trailing_comma=true
-line_length=88
-lines_after_imports=2
-lines_between_types=1
-multi_line_output=3
-not_skip="__init__.py"
-use_parentheses=true
+atomic = true
+balanced_wrapping = true
+force_grid_wrap = 0
+include_trailing_comma = true
+line_length = 88
+lines_after_imports = 2
+lines_between_types = 1
+multi_line_output = 3
+not_skip = "__init__.py"
+use_parentheses = true
 
-known_first_party="pandas_select"
-known_third_party=["numpy", "pandas", "pytest", "sklearn"]
+known_first_party = "pandas_select"
+known_third_party = ["numpy", "pandas", "pytest", "sklearn"]
 
 [tool.tox]
-legacy_tox_ini = """
+legacy_tox_ini="""
 [tox]
 envlist =
     py{36,37,38}-pandas{0251,1}
@@ -106,15 +106,15 @@ envlist =
     lint
     coverage
     package
-isolated_build = true
-skip_missing_interpreters = true
+isolated_build=true
+skip_missing_interpreters=true
 
 [testenv]
 deps =
     pandas0251: pandas==0.25.1
     pandas1: pandas==1.0.0
-extras = tests
-commands = coverage run --source pandas_select/ -p -m pytest --tb=short --basetemp={envtmpdir} {posargs}
+extras=tests
+commands=coverage run --source pandas_select/ -p -m pytest --tb=short --basetemp={envtmpdir} {posargs}
 
 [testenv:lint]
 skip_install = True
@@ -122,24 +122,24 @@ deps = pre-commit
 commands = pre-commit run --all-files --show-diff-on-failure
 
 [testenv:docs]
-basepython = python3.8
-extras = docs
+basepython=python3.8
+extras=docs
 commands =
     python -m xdoctest pandas_select/
     sphinx-build -n -T -b html -d {envtmpdir}/doctrees docs docs/_build/html
 
 [testenv:coverage]
-basepython = python3.8
-extras = tests
+basepython=python3.8
+extras=tests
 commands =
     coverage combine
     coverage html
     coverage report
 
 [testenv:coverage-ci]
-passenv = CODECOV_TOKEN
-extras = tests
-deps = codecov
+passenv=CODECOV_TOKEN
+extras=tests
+deps=codecov
 commands =
     coverage run --source pandas_select/ -m pytest --basetemp={envtmpdir}
     coverage xml
