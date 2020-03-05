@@ -256,13 +256,11 @@ class Exact(LabelSelector):
        A  B
     a  1  3
     b  2  4
-    # Same as df[["B", "A"]]:
-    >>> df[Exact(["B", "A"])]
+    >>> df[Exact(["B", "A"])] # Same as df[["B", "A"]]:
        B  A
     a  3  1
     b  4  2
-    # Same as df.loc[["b"]]:
-    >>> df.loc[Exact("b", axis="index")]
+    >>> df.loc[Exact("b", axis="index")] # Same as df.loc[["b"]]:
        A  B
     b  2  4
     """

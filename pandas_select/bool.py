@@ -151,7 +151,7 @@ class Anywhere(BoolIndexer):
     """
 
     def _join(self, df: pd.DataFrame) -> np.ndarray:
-        return df.any(axis="columns").values
+        return df.any(axis="columns").to_numpy()
 
 
 class Everywhere(BoolIndexer):
@@ -185,4 +185,4 @@ class Everywhere(BoolIndexer):
     """
 
     def _join(self, df: pd.DataFrame) -> np.ndarray:
-        return df.all(axis="columns").values
+        return df.all(axis="columns").to_numpy()

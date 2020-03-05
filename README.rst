@@ -2,6 +2,14 @@
 ``pandas-select``: Supercharged DataFrame indexing
 ==================================================
 
+.. image:: https://github.com/jeffzi/pandas-select/workflows/tests/badge.svg
+   :target: https://github.com/jeffzi/pandas-select/actions
+   :alt: Github Actions status
+
+.. image:: https://codecov.io/gh/jeffzi/pandas-select/branch/master/graph/badge.svg
+   :target: https://codecov.io/gh/jeffzi/pandas-select
+   :alt: Coverage
+
 .. image:: https://readthedocs.org/projects/project-template-python/badge/?version=latest
    :target: https://pandas-select.readthedocs.io/
    :alt: Documentation status
@@ -13,6 +21,10 @@
 .. image:: https://img.shields.io/pypi/pyversions/pandas-select.svg
    :target: https://pypi.org/project/pandas-select/
    :alt: Python versions supported
+
+.. image:: https://img.shields.io/pypi/l/pandas-select.svg
+   :target: https://pypi.python.org/pypi/pandas-select/
+   :alt: License
 
 .. image:: https://img.shields.io/badge/code%20style-black-000000.svg
    :target: https://github.com/psf/black
@@ -62,7 +74,7 @@ Design goals
     # vanilla
     cols = df.select_dtypes(exclude="number").columns
     df[cols]
-    cond = lambda col : col.startswith("Type") or col == "Legendary"
+    cond = lambda col: col.startswith("Type") or col == "Legendary"
     cols = [col for col in df.columns if cond(col)]
     df[cols]
 
@@ -92,7 +104,7 @@ Design goals
 
     ct = make_column_transformer(
         (StandardScaler(), ColumnSelector(AllNumeric() & ~AnyOf("Generation"))),
-        (OneHotEncoder(), ColumnSelector(AllNominal() | AllBool() | "Generation"))
+        (OneHotEncoder(), ColumnSelector(AllNominal() | AllBool() | "Generation")),
     )
     ct.fit_transform(df)
 

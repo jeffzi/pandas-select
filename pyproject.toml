@@ -35,23 +35,30 @@ importlib_metadata = {version = "^1.5.0", python = "<3.8"}
 sphinx = {version = "^2.4.1", optional = true}
 sphinxcontrib-contentui =  {version = "^0.2.4", optional = true}
 ipython= {version = "^7.12.0", optional = true}
+xdoctest = {version = "^0.11.0", optional = true}
+
+#tests
+coverage = {version = "^5.0.3", extras = ["toml"], optional = true}
 scikit-learn = {version = ">=0.20", optional = true}
+pytest = {version = "^5.3", optional = true}
 
 [tool.poetry.extras]
-docs = ["sphinx", "sphinxcontrib-contentui", "ipython", "sklearn"]
+docs = ["ipython", "scikit-learn", "sphinx", "sphinxcontrib-contentui", "xdoctest"]
+tests = ["coverage", "pytest", "scikit-learn"]
 
 [tool.poetry.dev-dependencies]
-black = {version = ">=19.10b0", python = ">=3.6"}
-mypy = "^0.761"
-wemake-python-styleguide = "^0.13.4"
+pre-commit = "^2.1.0"
 
+#docs
+ipython = "^7.12.0"
+sphinx = "^2.4.1"
+sphinxcontrib-contentui = "^0.2.4"
+xdoctest = "^0.11.0"
+
+#tests
+coverage = {version = "^5.0.3", extras = ["toml"]}
 pytest = "^5.3"
 scikit-learn = ">=0.20"
-tox = "^3.14.4"
-
-sphinx = "^2.4.1"
-ipython = "^7.12.0"
-sphinxcontrib-contentui = "^0.2.4"
 
 [tool.black]
 line-length = 88
@@ -73,35 +80,73 @@ exclude = '''
 '''
 
 [tool.isort]
-atomic=true
-balanced_wrapping=true
-force_grid_wrap=0
-include_trailing_comma=true
-line_length=88
-lines_after_imports=2
-lines_between_types=1
-multi_line_output=3
-not_skip="__init__.py"
-use_parentheses=true
+atomic = true
+balanced_wrapping = true
+force_grid_wrap = 0
+include_trailing_comma = true
+line_length = 88
+lines_after_imports = 2
+lines_between_types = 1
+multi_line_output = 3
+not_skip = "__init__.py"
+use_parentheses = true
 
-known_first_party="pandas_select"
-known_third_party=["numpy", "pandas", "pytest", "sklearn"]
+known_first_party = "pandas_select"
+known_third_party = ["numpy", "pandas", "pytest", "sklearn"]
 
 [tool.tox]
-legacy_tox_ini = """
+legacy_tox_ini="""
 [tox]
-envlist = py{36,37,38}-pandas{0.25,1}
-isolated_build = true
+envlist =
+    py{36,37,38}-pandas{0251,1}
+    docs
+    lint
+    coverage
+    package
+isolated_build=true
+skip_missing_interpreters=true
 
 [testenv]
-whitelist_externals = poetry
-
 deps =
-    pandas0.25: pandas==0.25.1
+    pandas0251: pandas==0.25.1
     pandas1: pandas==1.0.0
-    scikit-learn
-    pytest
+extras=tests
+commands=coverage run --source pandas_select/ -p -m pytest --tb=short --basetemp={envtmpdir} {posargs}
 
+[testenv:lint]
+skip_install = True
+deps = pre-commit
+commands = pre-commit run --all-files --show-diff-on-failure
+
+[testenv:docs]
+basepython=python3.8
+extras=docs
 commands =
-    pytest {posargs} tests/
+    python -m xdoctest pandas_select/
+    sphinx-build -n -T -b html -d {envtmpdir}/doctrees docs docs/_build/html
+
+[testenv:coverage]
+basepython=python3.8
+extras=tests
+commands =
+    coverage combine
+    coverage html
+    coverage report
+
+[testenv:coverage-ci]
+passenv=CODECOV_TOKEN
+extras=tests
+deps=codecov
+commands =
+    coverage run --source pandas_select/ -m pytest --basetemp={envtmpdir}
+    coverage xml
+    codecov
+
+[testenv:package]
+skip_install = True
+whitelist_externals = poetry
+deps = twine
+commands =
+    poetry build
+    python3 -m twine check dist/*
 """
