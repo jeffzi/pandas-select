@@ -10,7 +10,9 @@ their types and statistics.
 
     import pandas as pd
 
-    df = pd.read_csv("https://raw.githubusercontent.com/jeffzi/pokemonData/master/Pokemon.csv")
+    df = pd.read_csv(
+        "https://raw.githubusercontent.com/jeffzi/pokemonData/master/Pokemon.csv"
+    )
     df = df.set_index("Name")
     df
 
@@ -70,7 +72,7 @@ Logical operators
 
         .. ipython:: python
 
-            df[~AllNumeric()] # same as df[HasDtype(exclude="number")]
+            df[~AllNumeric()]  # same as df[HasDtype(exclude="number")]
             df[StartsWith("Type") | "Legendary"]
 
     .. tab-container:: vanilla
@@ -80,7 +82,7 @@ Logical operators
 
             cols = df.select_dtypes(exclude="number").columns
             df[cols]
-            cond = lambda col : col.startswith("Type") or col == "Legendary"
+            cond = lambda col: col.startswith("Type") or col == "Legendary"
             cols = [col for col in df.columns if cond(col)]
             df[cols]
 
@@ -154,7 +156,7 @@ They also have a ``level`` argument to target a specific level in the hierarchy.
 
             eon_mi = df_mi.loc[eon_mask].index
             gen_index = df_mi.index.get_level_values("Generation")
-            gen_mask = gen_index[gen_index.get_indexer_for([1,6])]
+            gen_mask = gen_index[gen_index.get_indexer_for([1, 6])]
             gen_mi = df_mi.loc[gen_mask].index
             df_mi.loc[eon_mi & gen_mi]
 
@@ -192,7 +194,7 @@ be fed to :class:`sklearn.compose.ColumnTransformer` via the wrapper :class:`~pa
 
             ct = make_column_transformer(
                 (StandardScaler(), ColumnSelector(AllNumeric() & ~AnyOf("Generation"))),
-                (OneHotEncoder(), ColumnSelector(AllNominal() | AllBool() | "Generation"))
+                (OneHotEncoder(), ColumnSelector(AllNominal() | AllBool() | "Generation")),
             )
             ct.fit_transform(df).shape
 
@@ -211,7 +213,7 @@ be fed to :class:`sklearn.compose.ColumnTransformer` via the wrapper :class:`~pa
                     make_column_selector(r"^(?!Generation).*$", dtype_include=["number"]),
                 ),
                 (OneHotEncoder(), make_column_selector(dtype_include=to_encode)),
-                (OneHotEncoder(), make_column_selector("Generation"))
+                (OneHotEncoder(), make_column_selector("Generation")),
             )
             ct.fit_transform(df).shape
 

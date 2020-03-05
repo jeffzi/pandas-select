@@ -24,6 +24,12 @@ repos:
         additional_dependencies: [toml]
         language_version: python3.8
 
+  - repo: https://gitlab.com/pycqa/flake8
+    rev: "3.7.9"
+    hooks:
+      - id: flake8
+        additional_dependencies: ["wemake-python-styleguide==0.13.4"]
+
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v0.761
     hooks:

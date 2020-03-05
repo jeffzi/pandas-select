@@ -36,11 +36,13 @@ of strings.
     .. ipython:: python
 
         import pandas as pd
+
         df = pd.DataFrame([[2, 1], [1, 2]], columns=["A", "A"], index=["a", "a"])
         df
         df[["A", "A"]]
         df.loc[["a", "a"]]
         from pandas_select import AnyOf
+
         try:
             df[AnyOf("A")]
         except RuntimeError as e:
@@ -113,7 +115,8 @@ arguments are inferred from the other operand.
 .. ipython:: python
 
     from pandas_select import AnyOf
-    AnyOf("A", axis = "index", level = 2) & "B"
+
+    AnyOf("A", axis="index", level=2) & "B"
     ["A", "B"] | AnyOf("B")
 
 .. _boolean-indexing:

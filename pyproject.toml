@@ -47,9 +47,6 @@ docs = ["ipython", "scikit-learn", "sphinx", "sphinxcontrib-contentui", "xdoctes
 tests = ["coverage", "pytest", "scikit-learn"]
 
 [tool.poetry.dev-dependencies]
-#lint
-black = {version = ">=19.10b0", python = ">=3.6"}
-mypy = "^0.761"
 pre-commit = "^2.1.0"
 
 #docs

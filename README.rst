@@ -30,6 +30,9 @@
    :target: https://github.com/psf/black
    :alt: Code style: black
 
+.. image:: https://img.shields.io/badge/style-wemake-000000.svg
+   :target: https://github.com/wemake-services/wemake-python-styleguide
+
 ``pandas-select`` is a collection of DataFrame selectors that facilitates indexing
 and selecting data, fully compatible with pandas vanilla indexing.
 
@@ -71,7 +74,7 @@ Design goals
     # vanilla
     cols = df.select_dtypes(exclude="number").columns
     df[cols]
-    cond = lambda col : col.startswith("Type") or col == "Legendary"
+    cond = lambda col: col.startswith("Type") or col == "Legendary"
     cols = [col for col in df.columns if cond(col)]
     df[cols]
 
@@ -101,7 +104,7 @@ Design goals
 
     ct = make_column_transformer(
         (StandardScaler(), ColumnSelector(AllNumeric() & ~AnyOf("Generation"))),
-        (OneHotEncoder(), ColumnSelector(AllNominal() | AllBool() | "Generation"))
+        (OneHotEncoder(), ColumnSelector(AllNominal() | AllBool() | "Generation")),
     )
     ct.fit_transform(df)
 

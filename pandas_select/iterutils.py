@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
-import typing
 
-from typing import Any, List, Set, Tuple, Union
+from typing import Any, List, Set, Tuple
 
 import pandas as pd
 
