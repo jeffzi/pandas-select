@@ -2,7 +2,7 @@
 
 from collections import Counter
 from functools import partial
-from typing import Any, Callable, Iterable, Optional, Union, cast
+from typing import Any, Callable, Iterable, List, Optional, Union, cast
 
 import numpy as np
 import pandas as pd
@@ -34,13 +34,13 @@ def _validate_axis(axis: Axis) -> Axis:
     return axis
 
 
-def _validate_indexer(indexer: Iterable) -> Iterable:
+def _validate_indexer(indexer: pd.Index) -> Iterable:
     """Ensure `indexer` can be used as an indexer on another index.
     https://pandas.pydata.org/pandas-docs/stable/user_guide/missing_data.html
     """
     if not isinstance(indexer, pd.MultiIndex) and pd.isna(indexer).any():
         # isna is not defined for MultiIndex
-        return list(indexer)
+        return indexer.tolist()
     return indexer
 
 
@@ -150,15 +150,14 @@ class _LabelOpsMixin:
         return LabelInvertOp(self)  # type:ignore
 
 
-def _to_index(obj: Union[Iterable, pd.Index]) -> pd.Index:
+def _to_index(obj: Union[List, pd.Index]) -> pd.Index:
     if isinstance(obj, pd.Index):
         return obj
 
-    obj = iterutils.to_list(obj)
     if isinstance(obj[0], tuple):
         return pd.MultiIndex.from_tuples(obj)
 
-    return pd.Index(obj)
+    return pd.Index(obj, dtype="object")
 
 
 class LabelOp(LogicalOp, _LabelOpsMixin):
