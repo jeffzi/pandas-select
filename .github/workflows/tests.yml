@@ -14,11 +14,11 @@ jobs:
         # - windows-latest
         toxenv:
           - py38-pandas1
-          - py38-pandas0251
+          - py38-pandas0253
           - py37-pandas1
-          - py37-pandas0251
+          - py37-pandas0253
           - py36-pandas1
-          - py36-pandas0251
+          - py36-pandas0253
 
     steps:
       - uses: actions/checkout@v2
