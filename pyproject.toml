@@ -80,19 +80,8 @@ exclude = '''
 '''
 
 [tool.isort]
-atomic = true
-balanced_wrapping = true
-force_grid_wrap = 0
-include_trailing_comma = true
-line_length = 88
-lines_after_imports = 2
-lines_between_types = 1
-multi_line_output = 3
-not_skip = "__init__.py"
-use_parentheses = true
-
-known_first_party = "pandas_select"
-known_third_party = ["numpy", "pandas", "pytest", "sklearn"]
+float_to_top = true
+profile = "black"
 
 [tool.tox]
 legacy_tox_ini="""
@@ -108,8 +97,8 @@ skip_missing_interpreters=true
 
 [testenv]
 deps =
-    pandas0251: pandas==0.25.1
-    pandas1: pandas==1.0.0
+    pandas0253: pandas==0.25.3
+    pandas1: pandas==1.1.5
 extras=tests
 commands=coverage run --source pandas_select/ -p -m pytest --tb=short --basetemp={envtmpdir} {posargs}
 

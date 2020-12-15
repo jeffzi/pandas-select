@@ -6,13 +6,11 @@ from typing import Any, Callable, Iterable, Optional, Union, cast
 
 import numpy as np
 import pandas as pd
-
 from pandas.util import Substitution
 
 from pandas_select import iterutils
 from pandas_select.base import LogicalOp, PrettyPrinter
 from pandas_select.bool import Everywhere
-
 
 Axis = Union[int, str]
 
@@ -71,7 +69,7 @@ class _LabelSelectorMixin(PrettyPrinter):
         selection: pd.Index = labels[self._get_indexer(index)]
 
         if selection.has_duplicates:
-            raise RuntimeError(f"Found duplicated values in selection")
+            raise RuntimeError("Found duplicated values in selection")
 
         return _validate_indexer(selection)
 
@@ -279,7 +277,7 @@ class Exact(LabelSelector):
         counts = Counter(values)
         dups = [val for val, cnt in counts.items() if cnt > 1]
         if dups:
-            raise ValueError(f"Found duplicated values")
+            raise ValueError("Found duplicated values")
         return values
 
     def _get_indexer(self, index: pd.Index) -> Union[Iterable[int], np.ndarray]:
@@ -330,7 +328,10 @@ class AnyOf(LabelSelector):
     """
 
     def __init__(
-        self, values: Any, axis: Axis = "columns", level: Optional[int] = None,
+        self,
+        values: Any,
+        axis: Axis = "columns",
+        level: Optional[int] = None,
     ):
         super().__init__(axis, level)
         self.values = iterutils.to_set(values)  # noqa: WPS110

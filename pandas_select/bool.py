@@ -5,12 +5,10 @@ from typing import Any, Callable, Iterable, Optional, Union
 
 import numpy as np
 import pandas as pd
-
 from pandas.api.types import is_bool_dtype, is_list_like
 
 from pandas_select import iterutils
 from pandas_select.base import LogicalOp, PrettyPrinter, Selector
-
 
 Cond = Callable[[pd.Series], Iterable[bool]]
 Columns = Union[str, Iterable[str], Callable]
@@ -112,7 +110,7 @@ class BoolOp(LogicalOp, _BoolOpsMixin):
 
         sel = np.asarray(sel)
         if not is_bool_dtype(sel):
-            raise TypeError(f"Operand is not boolean dtype.")
+            raise TypeError("Operand is not boolean dtype.")
 
         return _BoolMask(sel)
 

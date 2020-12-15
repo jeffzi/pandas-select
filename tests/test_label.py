@@ -20,7 +20,6 @@ from pandas_select import (
 
 from .utils import assert_col_indexer, assert_row_indexer, pp_param
 
-
 # ##############################  Fixtures  ##############################
 
 
@@ -84,7 +83,8 @@ def test_exact_col(df, cols, expected):
 
 
 @pytest.mark.parametrize(
-    "rows, expected", [pp_param([0], [0]), pp_param([0, 1], [0, 1]), pp_param(0, [0])],
+    "rows, expected",
+    [pp_param([0], [0]), pp_param([0, 1], [0, 1]), pp_param(0, [0])],
 )
 def test_exact_row(df, rows, expected):
     assert_row_indexer(df, Exact(rows, axis=0), expected)
@@ -101,7 +101,11 @@ def test_exact_row(df, rows, expected):
         ),
         pp_param(0, ["int"], [("int", "number")]),
         pp_param(0, ["int", "float"], [("int", "number"), ("float", "number")]),
-        pp_param(1, ["nominal"], [("category", "nominal"), ("string", "nominal")],),
+        pp_param(
+            1,
+            ["nominal"],
+            [("category", "nominal"), ("string", "nominal")],
+        ),
     ],
 )
 def test_exact_col_multi_index(df_mi, level, cols, expected):
@@ -308,8 +312,16 @@ def test_any_of_row(df, cols, expected):
         pp_param(0, ["int", "float"], [("int", "number"), ("float", "number")]),
         pp_param(0, ["float", "int"], [("int", "number"), ("float", "number")]),
         pp_param(0, [99], []),
-        pp_param(1, ["nominal"], [("category", "nominal"), ("string", "nominal")],),
-        pp_param(1, ["nominal"], [("category", "nominal"), ("string", "nominal")],),
+        pp_param(
+            1,
+            ["nominal"],
+            [("category", "nominal"), ("string", "nominal")],
+        ),
+        pp_param(
+            1,
+            ["nominal"],
+            [("category", "nominal"), ("string", "nominal")],
+        ),
         pp_param(1, [99], []),
     ],
 )
