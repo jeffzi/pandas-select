@@ -154,11 +154,9 @@ They also have a ``level`` argument to target a specific level in the hierarchy.
 
         .. ipython:: python
 
-            eon_mi = df_mi.loc[eon_mask].index
-            gen_index = df_mi.index.get_level_values("Generation")
-            gen_mask = gen_index[gen_index.get_indexer_for([1, 6])]
-            gen_mi = df_mi.loc[gen_mask].index
-            df_mi.loc[eon_mi & gen_mi]
+            df_mi_copy = df_mi.reset_index()
+            gen_mask = df_mi_copy["Generation"].isin([1, 6])
+            df_mi_copy[eon_mask & gen_mask].set_index(["Generation", "Number", "Name"])
 
 
 Scikit-learn integration
