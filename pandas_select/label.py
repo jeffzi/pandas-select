@@ -2,17 +2,15 @@
 
 from collections import Counter
 from functools import partial
-from typing import Any, Callable, Iterable, Optional, Union, cast
+from typing import Any, Callable, Iterable, List, Optional, Union, cast
 
 import numpy as np
 import pandas as pd
-
 from pandas.util import Substitution
 
 from pandas_select import iterutils
 from pandas_select.base import LogicalOp, PrettyPrinter
 from pandas_select.bool import Everywhere
-
 
 Axis = Union[int, str]
 
@@ -36,13 +34,13 @@ def _validate_axis(axis: Axis) -> Axis:
     return axis
 
 
-def _validate_indexer(indexer: Iterable) -> Iterable:
+def _validate_indexer(indexer: pd.Index) -> Iterable:
     """Ensure `indexer` can be used as an indexer on another index.
     https://pandas.pydata.org/pandas-docs/stable/user_guide/missing_data.html
     """
     if not isinstance(indexer, pd.MultiIndex) and pd.isna(indexer).any():
         # isna is not defined for MultiIndex
-        return list(indexer)
+        return indexer.tolist()
     return indexer
 
 
@@ -71,7 +69,7 @@ class _LabelSelectorMixin(PrettyPrinter):
         selection: pd.Index = labels[self._get_indexer(index)]
 
         if selection.has_duplicates:
-            raise RuntimeError(f"Found duplicated values in selection")
+            raise RuntimeError("Found duplicated values in selection")
 
         return _validate_indexer(selection)
 
@@ -84,7 +82,7 @@ def _intersection(left: pd.Index, right: pd.Index) -> pd.Index:
         isinstance(left, pd.MultiIndex)
         and isinstance(right, pd.MultiIndex)
         and pd.__version__ < "1.1.0"  # noqa: WPS609
-    ):
+    ):  # pragma: no cover
         return iterutils.mi_intersection(left, right)
     return left.intersection(right, sort=False)
 
@@ -152,15 +150,14 @@ class _LabelOpsMixin:
         return LabelInvertOp(self)  # type:ignore
 
 
-def _to_index(obj: Union[Iterable, pd.Index]) -> pd.Index:
+def _to_index(obj: Union[List, pd.Index]) -> pd.Index:
     if isinstance(obj, pd.Index):
         return obj
 
-    obj = iterutils.to_list(obj)
     if isinstance(obj[0], tuple):
         return pd.MultiIndex.from_tuples(obj)
 
-    return pd.Index(obj)
+    return pd.Index(obj, dtype="object")
 
 
 class LabelOp(LogicalOp, _LabelOpsMixin):
@@ -279,7 +276,7 @@ class Exact(LabelSelector):
         counts = Counter(values)
         dups = [val for val, cnt in counts.items() if cnt > 1]
         if dups:
-            raise ValueError(f"Found duplicated values")
+            raise ValueError("Found duplicated values")
         return values
 
     def _get_indexer(self, index: pd.Index) -> Union[Iterable[int], np.ndarray]:
@@ -330,7 +327,10 @@ class AnyOf(LabelSelector):
     """
 
     def __init__(
-        self, values: Any, axis: Axis = "columns", level: Optional[int] = None,
+        self,
+        values: Any,
+        axis: Axis = "columns",
+        level: Optional[int] = None,
     ):
         super().__init__(axis, level)
         self.values = iterutils.to_set(values)  # noqa: WPS110

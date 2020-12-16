@@ -1,0 +1,58 @@
+extends:
+  - "@commitlint/config-conventional"
+
+rules:
+  type-enum:
+    - 2
+    - always
+      # build
+    - - ":construction_worker:" # Changes related to the build system.
+      - ":green_heart:" # CI
+      - ":rocket:" # Deployment.
+      - ":pushpin:" # Pin dependencies to specific versions.
+      - ":arrow_down:" # Downgrade dependencies.
+      - ":arrow_up:" # Upgrade dependencies.
+      - ":truck:" # Move or rename resources (e.g.: files, paths, routes).
+      - ":see_no_evil:" # Add or update a .gitignore file.      - ":green_heart:" # CI.
+
+      # bugs
+      - ":bug:" # Fix a bug.
+      - ":lock:" # When dealing with security
+
+      # features
+      - ":tada:" # Begin a project.
+      - ":sparkles:" # Introduce new features.
+      - ":fire:" # Remove features.
+      - ":zap:" # Improve performance.
+
+      # logs
+      - ":loud_sound:" # Add or update logs.
+      - ":mute:" # Remove logs.
+
+      # specifics
+      - ":card_file_box:" # Perform database related changes.
+      - ":chart_with_upwards_trend:" # Add or update analytics or track code.
+      - ":whale:" # Add or update Docker files.
+      - ":wrench:" # Add or update configuration files.
+
+      # style
+      - ":art:" # Improve structure / format of the code.
+      - ":rotating_light:" # Remove linter warnings.
+      - ":recycle:" # Refactor code.
+
+      # docs
+      - ":memo:" # Add or update documentation
+
+      # tests
+      - ":white_check_mark:" # Add or update tests.
+
+      # repo
+      - ":rewind:" # Revert changes.
+      - ":twisted_rightwards_arrows:" # Merge branches.
+
+  subject-case: [2, always, [sentence-case]]
+
+parserPreset:
+  parserOpts:
+    headerPattern: '^(:\w*:) (.*)$'
+    headerCorrespondence: [type, subject]

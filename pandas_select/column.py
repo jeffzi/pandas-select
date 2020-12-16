@@ -7,7 +7,6 @@ import pandas as pd
 from pandas_select import iterutils
 from pandas_select.label import LabelSelector
 
-
 Dtypes = Union[str, List[str], type, List[type]]
 
 
@@ -70,7 +69,9 @@ class HasDtype(LabelSelector):
     """
 
     def __init__(
-        self, include: Optional[Dtypes] = None, exclude: Optional[Dtypes] = None,
+        self,
+        include: Optional[Dtypes] = None,
+        exclude: Optional[Dtypes] = None,
     ) -> None:
         super().__init__(axis="columns", level=None)
         self.include = include and iterutils.to_set(include)
