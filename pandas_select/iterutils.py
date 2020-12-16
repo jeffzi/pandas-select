@@ -24,7 +24,9 @@ def to_set(obj: Any) -> Set:
 
 
 # flake8: noqa: C901, WPS210, WPS221, WPS435, WPS437, WPS507
-def mi_intersection(left: pd.MultiIndex, right: pd.MultiIndex) -> pd.MultiIndex:
+def mi_intersection(
+    left: pd.MultiIndex, right: pd.MultiIndex
+) -> pd.MultiIndex:  # pragma: no cover
     """Intersection of MultiIndexes, preserving order.
     Fix https://github.com/pandas-dev/pandas/issues/31325
     """

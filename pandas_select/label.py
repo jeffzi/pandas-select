@@ -82,7 +82,7 @@ def _intersection(left: pd.Index, right: pd.Index) -> pd.Index:
         isinstance(left, pd.MultiIndex)
         and isinstance(right, pd.MultiIndex)
         and pd.__version__ < "1.1.0"  # noqa: WPS609
-    ):
+    ):  # pragma: no cover
         return iterutils.mi_intersection(left, right)
     return left.intersection(right, sort=False)
 
