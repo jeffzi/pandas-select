@@ -7,6 +7,18 @@ on:
     branches: [master, dev]
 
 jobs:
+  commitlint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - uses: wagoid/commitlint-github-action@v2
+        with:
+          configFile: ./.commitlintrc.yml
+          firstParent: true
+          failOnWarnings: true
+
   tests:
     runs-on: ${{ matrix.platform }}
     strategy:
@@ -15,7 +27,8 @@ jobs:
         platform:
           - ubuntu-latest
           - macos-latest
-        # - windows-latest
+          # - windows-latest
+
         toxenv:
           - py39-pandas1
           - py38-pandas1
