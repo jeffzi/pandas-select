@@ -1,8 +1,24 @@
 name: tests
 
-on: [push]
+on:
+  push:
+    branches: [master, dev]
+  pull_request:
+    branches: [master, dev]
 
 jobs:
+  commitlint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - uses: wagoid/commitlint-github-action@v2
+        with:
+          configFile: ./.commitlintrc.yml
+          firstParent: true
+          failOnWarnings: true
+
   tests:
     runs-on: ${{ matrix.platform }}
     strategy:
@@ -11,32 +27,39 @@ jobs:
         platform:
           - ubuntu-latest
           - macos-latest
-        # - windows-latest
+          # - windows-latest
+
         toxenv:
+          - py39-pandas1
           - py38-pandas1
-          - py38-pandas0251
+          - py38-pandas0253
           - py37-pandas1
-          - py37-pandas0251
+          - py37-pandas0253
           - py36-pandas1
-          - py36-pandas0251
+          - py36-pandas0253
 
     steps:
       - uses: actions/checkout@v2
       - name: Setup Python 3.6
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v2
         with:
           python-version: 3.6
         if: startsWith(matrix.toxenv, 'py36')
       - name: Setup Python 3.7
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v2
         with:
           python-version: 3.7
         if: startsWith(matrix.toxenv, 'py37')
       - name: Setup Python 3.8
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v2
         with:
           python-version: 3.8
         if: startsWith(matrix.toxenv, 'py38')
+      - name: Setup Python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+        if: startsWith(matrix.toxenv, 'py39')
       - name: Install tox
         run: python -m pip install tox
       - name: Run ${{ matrix.toxenv }}
@@ -47,7 +70,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Setup Python
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v2
         with:
           python-version: 3.8
       - name: Install tox
@@ -67,7 +90,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Setup Python
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v2
         with:
           python-version: 3.8
       - name: Install tox
@@ -80,7 +103,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Setup Python
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v2
         with:
           python-version: 3.8
       - name: Install poetry and tox

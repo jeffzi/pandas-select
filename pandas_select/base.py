@@ -5,7 +5,6 @@ from typing import Any, Callable, Iterable, List, Optional
 
 import pandas as pd
 
-
 Selector = Callable[[pd.DataFrame], Iterable]
 
 

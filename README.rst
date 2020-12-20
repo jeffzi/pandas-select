@@ -67,13 +67,14 @@ Design goals
 
 .. code-block:: python
 
-    # pandas-select
-    df[AllNumeric()]
-    df[StartsWith("Type") | "Legendary"]
 
-    # vanilla
-    cols = df.select_dtypes(exclude="number").columns
-    df[cols]
+    df[AllNumeric()] # pandas-select
+    df.select_dtypes(exclude="number").columns # vanilla
+
+    df[StartsWith("Type") | "Legendary"] # pandas-select
+
+     # vanilla
+    df[df.select_dtypes(exclude="number").columns]
     cond = lambda col: col.startswith("Type") or col == "Legendary"
     cols = [col for col in df.columns if cond(col)]
     df[cols]
@@ -85,7 +86,7 @@ Design goals
 .. code-block:: python
 
     # pandas-select
-    name = Contains("Jeff", axis="index", level="Name")
+    selector = Contains("Jeff", axis="index", level="Name")
     df_mi.loc[selector]
 
     # vanilla
