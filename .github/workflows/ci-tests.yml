@@ -79,18 +79,6 @@ jobs:
         with:
           fail_ci_if_error: true
 
-  commitlint:
-    runs-on: "ubuntu-latest"
-    steps:
-      - uses: "actions/checkout@v2"
-        with:
-          fetch-depth: 0
-      - uses: "wagoid/commitlint-github-action@v2"
-        with:
-          configFile: "./.commitlintrc.yml"
-          firstParent: true
-          failOnWarnings: true
-
   others:
     runs-on: "ubuntu-latest"
     strategy:
