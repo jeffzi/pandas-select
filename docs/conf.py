@@ -39,7 +39,7 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
     "sphinx.ext.intersphinx",
-    "sphinx.ext.linkcode",
+    "sphinx.ext.viewcode",
     "sphinx.ext.napoleon",
 ]
 
@@ -64,34 +64,6 @@ html_baseurl = "https://pandas-select.readthedocs.io/en/latest/"
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 # html_static_path = ["_static"]
-
-
-# Options for the linkcode extension
-# ----------------------------------
-
-# Resolve function for the linkcode extension.
-def linkcode_resolve(domain, info):
-    def find_source():
-        # try to find the file and line number, based on code from numpy:
-        # https://github.com/numpy/numpy/blob/master/doc/source/conf.py#L286
-        obj = sys.modules[info["module"]]
-        for part in info["fullname"].split("."):
-            obj = getattr(obj, part)
-        import inspect
-        import os
-
-        fn = inspect.getsourcefile(obj)
-        fn = os.path.relpath(fn, start=os.path.abspath(".."))
-        source, lineno = inspect.getsourcelines(obj)
-        return fn, lineno, lineno + len(source) - 1
-
-    if domain != "py" or not info["module"]:
-        return None
-    try:
-        filename = f"{find_source()}#L%d-L%d"
-    except Exception:
-        filename = info["module"].replace(".", "/") + ".py"
-    return "https://github.com/jeffzi/pandas-select/blob/master/" + filename
 
 
 # -- Options for extensions --------------------------------------------------
