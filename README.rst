@@ -95,22 +95,22 @@ Design goals
 
 * Play well with machine learning applications.
 
-   * Respect the columns :ref:`order <order>`.
-   * Allow *deferred selection* when the DataFrame's columns are not known in advance,
-   for example in automated machine learning applications.
-   * Offer integration with :ref:`sklearn`.
+  - Respect the columns order.
+  - Allow *deferred selection* when the DataFrame's columns are not known in advance,
+    for example in automated machine learning applications.
+  - Offer integration with `sklearn <https://scikit-learn.org/stable/>`_.
 
-   .. code-block:: python
+    .. code-block:: python
 
-      from pandas_select import AnyOf, AllBool, AllNominal, AllNumeric, ColumnSelector
-      from sklearn.compose import make_column_transformer
-      from sklearn.preprocessing import OneHotEncoder, StandardScaler
+        from pandas_select import AnyOf, AllBool, AllNominal, AllNumeric, ColumnSelector
+        from sklearn.compose import make_column_transformer
+        from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
-      ct = make_column_transformer(
-         (StandardScaler(), ColumnSelector(AllNumeric() & ~AnyOf("Generation"))),
-         (OneHotEncoder(), ColumnSelector(AllNominal() | AllBool() | "Generation")),
-      )
-      ct.fit_transform(df)
+        ct = make_column_transformer(
+           (StandardScaler(), ColumnSelector(AllNumeric() & ~AnyOf("Generation"))),
+           (OneHotEncoder(), ColumnSelector(AllNominal() | AllBool() | "Generation")),
+        )
+        ct.fit_transform(df)
 
 
 Project Information
