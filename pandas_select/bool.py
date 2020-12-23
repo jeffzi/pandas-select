@@ -35,7 +35,7 @@ class _BoolIndexerMixin(PrettyPrinter, ABC):
         return self._join(masks)
 
     @abstractmethod
-    def _join(self, df: pd.DataFrame) -> Iterable[bool]:
+    def _join(self, df: pd.DataFrame) -> Iterable[bool]:  # pragma: no cover
         raise NotImplementedError()
 
 

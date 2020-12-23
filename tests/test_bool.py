@@ -27,7 +27,7 @@ def test_anywhere(where_df):
     selector = Anywhere(lambda x: x < 0)
     assert_frame_equal(where_df[selector], where_df.loc[["neg", "mixed"]])
 
-    for cols in ["B", ["B"]]:
+    for cols in ["B", ["B"], lambda x: ["B"]]:
         selector = Anywhere(lambda x: x < 0, columns=cols)
         assert_frame_equal(where_df[selector], where_df.loc[["neg"]])
 
@@ -47,7 +47,7 @@ def test_everywhere(where_df):
 
 
 def test_everywhere_empty(where_df):
-    selector = Everywhere(lambda x: x > 99)
+    selector = Anywhere(lambda x: x > 99)
     assert where_df[selector].empty
 
 
@@ -115,12 +115,10 @@ def test_where_ops_cast_array(where_df, op, expected):
     assert_frame_equal(where_df.loc[expected], where_df[op(left, right)])
 
 
-def test_where_invalid_ops(where_df):
+@pytest.mark.parametrize("op", [operator.and_, operator.or_, operator.xor])
+def test_where_invalid_ops(op):
     selector = Anywhere(lambda x: x > 99)
-
-    with pytest.raises(TypeError):
-        where_df["a" & selector]
-    with pytest.raises(TypeError):
-        "a" | selector
-    with pytest.raises(TypeError):
-        "a" ^ selector
+    with pytest.raises(TypeError, match="Operand does not support logical operations"):
+        op("a", selector)
+    with pytest.raises(TypeError, match="Operand is not boolean dtype"):
+        op(["a"], selector)
