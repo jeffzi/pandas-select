@@ -21,4 +21,5 @@ from pandas_select.label import (
     Match,
     StartsWith,
 )
+from pandas_select.pandera import SchemaSelector
 from pandas_select.sklearn import ColumnSelector

@@ -11,6 +11,7 @@ API reference
    label_selection
    boolean_indexing
    sklearn
+   pandera
 
 ``pandas_select`` relies on Pandas' mechanism of
 `selection by callable <https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#selection-by-callable>`_
