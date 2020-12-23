@@ -61,11 +61,11 @@ It can be installed via `pip <https://pip.pypa.io/en/stable/>`_:
 Design goals
 ------------
 
-* Fully compatible with
+* Fully compatible with the
   `pandas.DataFrame <https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html>`_
-  ``[]`` and
+  ``[]`` operator and the
   `pandas.DataFrame.loc <https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.loc.html?highlight=loc#pandas.DataFrame.loc>`_
-  accessors.
+  accessor.
 
 * Emphasise readability and conciseness by cutting boilerplate:
 
@@ -93,22 +93,25 @@ Design goals
     # vanilla
     df_mi.loc[df_mi.index.get_level_values("Name").str.contains("Jeff")]
 
-* Allow *deferred selection* when the DataFrame's columns are not known in advance,
-  for example in automated machine learning applications. ``pandas_select`` offers
-  integration with
-  `sklearn <https://scikit-learn.org/stable/modules/generated/sklearn.compose.`make_column_selector.html>`_.
+* Play well with machine learning applications.
 
-.. code-block:: python
+   * Respect the columns :ref:`order <order>`.
+   * Allow *deferred selection* when the DataFrame's columns are not known in advance,
+   for example in automated machine learning applications.
+   * Offer integration with :ref:`sklearn`.
 
-    from pandas_select import AnyOf, AllBool, AllNominal, AllNumeric, ColumnSelector
-    from sklearn.compose import make_column_transformer
-    from sklearn.preprocessing import OneHotEncoder, StandardScaler
+   .. code-block:: python
 
-    ct = make_column_transformer(
-        (StandardScaler(), ColumnSelector(AllNumeric() & ~AnyOf("Generation"))),
-        (OneHotEncoder(), ColumnSelector(AllNominal() | AllBool() | "Generation")),
-    )
-    ct.fit_transform(df)
+      from pandas_select import AnyOf, AllBool, AllNominal, AllNumeric, ColumnSelector
+      from sklearn.compose import make_column_transformer
+      from sklearn.preprocessing import OneHotEncoder, StandardScaler
+
+      ct = make_column_transformer(
+         (StandardScaler(), ColumnSelector(AllNumeric() & ~AnyOf("Generation"))),
+         (OneHotEncoder(), ColumnSelector(AllNominal() | AllBool() | "Generation")),
+      )
+      ct.fit_transform(df)
+
 
 Project Information
 -------------------

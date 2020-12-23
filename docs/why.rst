@@ -9,8 +9,8 @@ to pandas.
     :container: container pb-4
     :column: col-md-12 p-2
 
-    Fully compatible with :class:`~pandas.DataFrame` ``[]``
-    and :meth:`~pandas.DataFrame.loc` accessors.
+    Fully compatible with the :class:`~pandas.DataFrame` ``[]`` operator
+    and the :meth:`~pandas.DataFrame.loc` accessor.
     ---
     Emphasise readability and conciseness by cutting boilerplate:
 
@@ -42,18 +42,21 @@ to pandas.
        df_mi.loc[df_mi.index.get_level_values("Name").str.contains("Jeff")]
 
     ---
-    Allow *deferred selection* when the DataFrame's columns are not known in advance,
-    for example in automated machine learning applications. ``pandas_select`` offers
-    integration with `sklearn <https://scikit-learn.org/stable/modules/generated/sklearn.compose.`make_column_selector.html>`_.
+    Play well with machine learning applications.
 
-    .. code-block:: python
+    * Respect the columns :ref:`order <order>`.
+    * Allow *deferred selection* when the DataFrame's columns are not known in advance,
+      for example in automated machine learning applications.
+    * Offer integration with :ref:`sklearn`.
 
-       from pandas_select import AnyOf, AllBool, AllNominal, AllNumeric, ColumnSelector
-       from sklearn.compose import make_column_transformer
-       from sklearn.preprocessing import OneHotEncoder, StandardScaler
+      .. code-block:: python
 
-       ct = make_column_transformer(
-          (StandardScaler(), ColumnSelector(AllNumeric() & ~AnyOf("Generation"))),
-          (OneHotEncoder(), ColumnSelector(AllNominal() | AllBool() | "Generation")),
-       )
-       ct.fit_transform(df)
+        from pandas_select import AnyOf, AllBool, AllNominal, AllNumeric, ColumnSelector
+        from sklearn.compose import make_column_transformer
+        from sklearn.preprocessing import OneHotEncoder, StandardScaler
+
+        ct = make_column_transformer(
+            (StandardScaler(), ColumnSelector(AllNumeric() & ~AnyOf("Generation"))),
+            (OneHotEncoder(), ColumnSelector(AllNominal() | AllBool() | "Generation")),
+        )
+        ct.fit_transform(df)
