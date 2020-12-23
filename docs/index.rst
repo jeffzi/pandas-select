@@ -1,18 +1,10 @@
 .. include:: ../README.rst
-
-Full Table of Contents
-======================
+   :end-before: installation-end
 
 .. toctree::
-   :maxdepth: 3
+   :hidden:
 
-   license
    why
-   examples
-   api
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`search`
+   getting_started
+   reference/index
+   license
