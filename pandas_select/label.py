@@ -13,6 +13,7 @@ from pandas_select.base import LogicalOp, PrettyPrinter
 from pandas_select.bool import Everywhere
 
 Axis = Union[int, str]
+Level = Union[int, str]
 
 AXIS_DOC = (
     "axis: default 'columns'\n"
@@ -27,10 +28,12 @@ LEVEL_DOC = (
 )
 
 
+AXES = frozenset((0, 1, "index", "columns"))
+
+
 def _validate_axis(axis: Axis) -> Axis:
-    allowed = [0, 1, "index", "columns"]
-    if axis not in allowed:
-        raise ValueError(f"axis must be one of {allowed}.")
+    if axis not in AXES:
+        raise ValueError(f"axis must be one of {AXES}, not {axis}.")
     return axis
 
 
@@ -55,7 +58,7 @@ class _LabelSelectorMixin(PrettyPrinter):
     %(level)s
     """
 
-    def __init__(self, axis: Axis = "columns", level: Optional[Axis] = None):
+    def __init__(self, axis: Axis = "columns", level: Optional[Level] = None):
         self.axis = _validate_axis(axis)
         self.level = level
 
@@ -195,7 +198,7 @@ class LabelOp(LogicalOp, _LabelOpsMixin):
         return _validate_indexer(selection)
 
     def _validate_selector(
-        self, obj: Any, axis: Axis = "columns", level: Optional[int] = None
+        self, obj: Any, axis: Axis = "columns", level: Optional[Level] = None
     ) -> _LabelSelectorMixin:
         if callable(obj):
             return cast(_LabelSelectorMixin, obj)
@@ -266,7 +269,7 @@ class Exact(LabelSelector):
         self,
         values: Union[Any, Iterable],
         axis: Axis = "columns",
-        level: Optional[int] = None,
+        level: Optional[Level] = None,
     ):
         super().__init__(axis, level)
         self.values = self._validate_values(values)
@@ -330,7 +333,7 @@ class AnyOf(LabelSelector):
         self,
         values: Any,
         axis: Axis = "columns",
-        level: Optional[int] = None,
+        level: Optional[Level] = None,
     ):
         super().__init__(axis, level)
         self.values = iterutils.to_set(values)  # noqa: WPS110
@@ -443,7 +446,7 @@ class LabelMask(LabelSelector):
         self,
         cond: Union[Iterable[bool], IndexMask],
         axis: Axis = "columns",
-        level: Optional[int] = None,
+        level: Optional[Level] = None,
         **kwargs: Any,
     ):
         super().__init__(axis, level)
@@ -472,7 +475,7 @@ class _IgnoreCase(LabelMask):
         pat: str,
         case: bool = True,
         axis: Axis = "columns",
-        level: Optional[int] = None,
+        level: Optional[Level] = None,
         **kwargs: Any,
     ):
         kwargs["pat"] = pat if case else pat.lower()
@@ -529,7 +532,7 @@ class StartsWith(_IgnoreCase):
         pat: str,
         case: bool = True,
         axis: Axis = "columns",
-        level: Optional[int] = None,
+        level: Optional[Level] = None,
     ):
         super().__init__(
             pd.core.strings.str_startswith, pat, case, axis, level, na=False
@@ -576,7 +579,7 @@ class EndsWith(_IgnoreCase):
         pat: str,
         case: bool = True,
         axis: Axis = "columns",
-        level: Optional[int] = None,
+        level: Optional[Level] = None,
     ):
         super().__init__(pd.core.strings.str_endswith, pat, case, axis, level, na=False)
 
@@ -631,7 +634,7 @@ class Contains(LabelMask):
         flags: int = 0,
         regex: bool = True,
         axis: Axis = "columns",
-        level: Optional[int] = None,
+        level: Optional[Level] = None,
     ):
         contains_kw = {
             "pat": pat,
@@ -683,7 +686,7 @@ class Match(LabelMask):
         pat: str,
         flags: int = 0,
         axis: Axis = "columns",
-        level: Optional[int] = None,
+        level: Optional[Level] = None,
     ):
         match_kw = {"pat": pat, "flags": flags, "na": False}
         super().__init__(pd.core.strings.str_match, axis, level, **match_kw)

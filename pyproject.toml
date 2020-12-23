@@ -31,37 +31,27 @@ classifiers = [
 python = ">=3.6.1, <3.10"
 pandas = ">=0.25.3"
 importlib_metadata = { version = "^1.5.0", python = "<3.8" }
+scikit-learn = { version = ">=0.20", optional = true }
 #docs
-sphinx = { version = "^3.3.1", optional = true }
-sphinxcontrib-contentui = { version = "^0.2.5", optional = true }
+furo = { version = "^2020.12.9-beta.21", optional = true }
 ipython = { version = "^7.12.0", optional = true }
+Sphinx = { version = "^3.4.0", optional = true }
+sphinx-copybutton = { version = "^0.3.1", optional = true }
+sphinx-panels = { version = "^0.5.2", optional = true }
 xdoctest = { version = "^0.15.0", optional = true }
 #tests
-pydata-sphinx-theme = "^0.4.1"
 pytest = { version = "^6.2.1", optional = true }
-scikit-learn = { version = ">=0.20", optional = true }
-sphinx-copybutton = { version = "^0.3.1", optional = true }
 
 [tool.poetry.extras]
 docs = [
+    "furo",
     "ipython",
-    "pydata-sphinx-theme",
     "scikit-learn",
+    "sphinx_panels",
     "sphinx",
-    "sphinxcontrib-contentui",
     "xdoctest"
 ]
 tests = ["pytest", "scikit-learn"]
-
-[tool.poetry.dev-dependencies]
-#docs
-ipython = "^7.12.0"
-sphinx = "^3.3.1"
-sphinxcontrib-contentui = "^0.2.5"
-xdoctest = "^0.15.0"
-#tests
-pytest = "^6.2.1"
-scikit-learn = ">=0.20"
 
 [tool.black]
 line-length = 88
@@ -124,6 +114,7 @@ commands = pre-commit run --all-files --show-diff-on-failure
 basepython=python3.8
 extras=docs
 commands =
+    rm -rf docs/_build
     python -m xdoctest pandas_select/
     sphinx-build -n -T -b html -d {envtmpdir}/doctrees docs docs/_build/html
     python -m doctest README.rst
