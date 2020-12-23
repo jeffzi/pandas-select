@@ -33,7 +33,7 @@ AXES = frozenset((0, 1, "index", "columns"))
 
 def _validate_axis(axis: Axis) -> Axis:
     if axis not in AXES:
-        raise ValueError(f"axis must be one of {AXES}, not {axis}.")
+        raise ValueError(f"axis must be one of {set(AXES)}, not '{axis}'.")
     return axis
 
 
@@ -76,7 +76,7 @@ class _LabelSelectorMixin(PrettyPrinter):
 
         return _validate_indexer(selection)
 
-    def _get_indexer(self, index: pd.Index) -> Iterable:
+    def _get_indexer(self, index: pd.Index) -> Iterable:  # pragma: no cover
         raise NotImplementedError()
 
 

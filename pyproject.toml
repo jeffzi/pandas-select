@@ -100,7 +100,7 @@ deps =
     pandaslatest: pandas
 extras=tests
 commands=
-    coverage run --source pandas_select/ -p -m pytest --tb=short --basetemp={envtmpdir} {posargs}
+    coverage run --source pandas_select/ --omit=pandas_select/_version.py -p -m pytest --tb=short --basetemp={envtmpdir} {posargs}
     coverage combine
     coverage html
     coverage report

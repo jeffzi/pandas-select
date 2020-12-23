@@ -30,13 +30,13 @@ jobs:
         run: "python -m tox -e py${{ matrix.python }}-pandas${{ matrix.pandas }}"
 
       - name: "Generate XML coverage"
-        if: "env.USING_COVERAGE == {{ matrix.python }}"
+        if: env.USING_COVERAGE ==  matrix.python
         run: |
           set -xe
           python -m coverage xml
 
       - name: "Upload coverage to Codecov"
-        if: "env.USING_COVERAGE == {{ matrix.python }}"
+        if: env.USING_COVERAGE ==  matrix.python
         uses: "codecov/codecov-action@v1"
         with:
           fail_ci_if_error: true
@@ -68,13 +68,13 @@ jobs:
         run: "python -m tox -e py${{ matrix.python }}-pandas${{ matrix.pandas }}"
 
       - name: "Upload coverage to Codecov"
-        if: "env.USING_COVERAGE == {{ matrix.python }}"
+        if: env.USING_COVERAGE ==  matrix.python
         run: |
           set -xe
           python -m coverage xml
 
       - name: "Upload coverage to Codecov"
-        if: "env.USING_COVERAGE == {{ matrix.python }}"
+        if: env.USING_COVERAGE ==  matrix.python
         uses: "codecov/codecov-action@v1"
         with:
           fail_ci_if_error: true

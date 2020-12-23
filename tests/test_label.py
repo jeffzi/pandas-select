@@ -144,10 +144,19 @@ def test_exact_duplicate_values():
         Exact(["A", "A"])
 
 
-def test_exact_nan():
-    df = pd.DataFrame({"a": [1], np.nan: [1]})
-    actual = df[Exact([np.nan, "a"])].columns
+NANS = [np.nan] if pd.__version__ < "1" else [np.nan, pd.NA]
+
+
+@pytest.mark.parametrize("nan_value", NANS)
+def test_exact_nan(nan_value):
+    df = pd.DataFrame({"a": [1], nan_value: [1]})
+    actual = df[Exact([nan_value, "a"])].columns
     assert pd.isna(actual[0]) and actual[1] == "a"
+
+
+def test_invalid_axis():
+    with pytest.raises(ValueError, match=r"axis must be one of .*, not 'invalid'"):
+        Exact("A", axis="invalid")
 
 
 # ##############################  Logical operations  ##############################
@@ -344,7 +353,10 @@ def test_any_of_row_multi_index(df_mi, level, cols, expected):
     assert_row_indexer(df_mi, AnyOf(cols, axis=0, level=level), expected)
 
 
-def test_all_of_raise(df):
+def test_all_of(df):
+    assert_col_indexer(df, AllOf(["int", "string"]), ["int", "string"])
+    assert_col_indexer(df, ~AllOf(["int", "string"]), ["float", "category"])
+
     with pytest.raises(KeyError, match="invalid"):
         df[AllOf(["int", "{'invalid'}"])]
 

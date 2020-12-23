@@ -9,6 +9,8 @@ from pandas_select.label import LabelSelector
 
 Dtypes = Union[str, List[str], type, List[type]]
 
+LEGACY_PANDAS = pd.__version__ < "1.0.0"  # noqa: WPS609
+
 
 class HasDtype(LabelSelector):
     """Select columns based on the column dtypes.
@@ -179,14 +181,12 @@ class AllCat(HasDtype):
 
 
 def _get_str_dtypes(strict: bool) -> List[str]:
-    old_pandas = pd.__version__ < "1.0.0"  # noqa: WPS609
-
     if strict:
-        if old_pandas:
+        if LEGACY_PANDAS:
             raise ValueError("strict=True is incompatible with pandas < 1.0.0")
         return ["string"]
 
-    return ["object"] if old_pandas else ["string", "object"]
+    return ["object"] if LEGACY_PANDAS else ["string", "object"]
 
 
 class AllStr(HasDtype):

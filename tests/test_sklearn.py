@@ -37,3 +37,13 @@ def test_invalid_column_selector():
     for selector in ["a", StartsWith("a", axis=0)]:
         with pytest.raises(ValueError):
             ColumnSelector(selector)
+
+
+def test_invalid_input():
+    with pytest.raises(ValueError):
+        ColumnSelector(lambda x: ["A"])([[1, 2]])
+
+
+def test_lambda_selector():
+    df = pd.DataFrame([[0, 1]], columns=["A", "B"])
+    assert ColumnSelector(lambda x: ["A"])(df) == ["A"]
