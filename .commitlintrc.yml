@@ -13,7 +13,8 @@ rules:
       - ":arrow_down:" # Downgrade dependencies.
       - ":arrow_up:" # Upgrade dependencies.
       - ":truck:" # Move or rename resources (e.g.: files, paths, routes).
-      - ":see_no_evil:" # Add or update a .gitignore file.      - ":green_heart:" # CI.
+      - ":see_no_evil:" # Add or update a .gitignore file.
+      - ":bookmark:" # Release / Version tags.
 
       # bugs
       - ":bug:" # Fix a bug.
