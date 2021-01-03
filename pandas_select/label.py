@@ -405,7 +405,7 @@ MASK_MI_DOC = (
     + " all the levels will be tested."
 )
 
-IndexMask = Callable[[pd.Index], Iterable[bool]]
+IndexMask = Callable[..., Iterable[bool]]
 
 
 @Substitution(axis=AXIS_DOC, level=LEVEL_DOC, mask_mi=MASK_MI_DOC)
@@ -422,7 +422,7 @@ class LabelMask(LabelSelector):
     %(axis)s
     %(level)s
     kwargs:
-        If ``cond`` is a :func:`callable`, keyword arguments to pass to it.
+        If ``cond`` is a :func:`callable`, additional keyword arguments passed to it.
 
     Notes
     -----
@@ -479,7 +479,7 @@ class _IgnoreCase(LabelMask):
         **kwargs: Any,
     ):
         kwargs["pat"] = pat if case else pat.lower()
-        super().__init__(cond, axis, level, **kwargs)  # type:ignore
+        super().__init__(cond, axis, level, **kwargs)
         self.case = case
 
     def _get_indexer(self, index: pd.Index) -> np.ndarray:
@@ -534,9 +534,14 @@ class StartsWith(_IgnoreCase):
         axis: Axis = "columns",
         level: Optional[Level] = None,
     ):
-        super().__init__(
-            pd.core.strings.str_startswith, pat, case, axis, level, na=False
-        )
+        def str_startswith(
+            series: pd.Index,
+            pat: str,
+            **kwargs: Any,
+        ) -> Iterable[bool]:
+            return series.str.startswith(pat, **kwargs)
+
+        super().__init__(str_startswith, pat, case, axis, level, na=False)
 
 
 @Substitution(
@@ -581,7 +586,14 @@ class EndsWith(_IgnoreCase):
         axis: Axis = "columns",
         level: Optional[Level] = None,
     ):
-        super().__init__(pd.core.strings.str_endswith, pat, case, axis, level, na=False)
+        def str_endswith(
+            series: pd.Index,
+            pat: str,
+            **kwargs: Any,
+        ) -> Iterable[bool]:
+            return series.str.endswith(pat, **kwargs)
+
+        super().__init__(str_endswith, pat, case, axis, level, na=False)
 
 
 FLAGS_DOC = (
@@ -643,7 +655,15 @@ class Contains(LabelMask):
             "na": False,
             "regex": regex,
         }
-        super().__init__(pd.core.strings.str_contains, axis, level, **contains_kw)
+
+        def str_contains(
+            series: pd.Index,
+            pat: str,
+            **kwargs: Any,
+        ) -> Iterable[bool]:
+            return series.str.contains(pat, **kwargs)
+
+        super().__init__(str_contains, axis, level, **contains_kw)
 
 
 @Substitution(
@@ -688,5 +708,8 @@ class Match(LabelMask):
         axis: Axis = "columns",
         level: Optional[Level] = None,
     ):
+        def str_match(series: pd.Index, pat: str, **kwargs: Any) -> Iterable[bool]:
+            return series.str.match(pat, **kwargs)
+
         match_kw = {"pat": pat, "flags": flags, "na": False}
-        super().__init__(pd.core.strings.str_match, axis, level, **match_kw)
+        super().__init__(str_match, axis, level, **match_kw)
