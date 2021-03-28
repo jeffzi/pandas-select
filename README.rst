@@ -10,7 +10,7 @@
    :target: https://codecov.io/gh/jeffzi/pandas-select
    :alt: Coverage
 
-.. image:: https://readthedocs.org/projects/project-template-python/badge/?version=latest
+.. image:: https://readthedocs.org/projects/project-template-python/badge/?version=stable
    :target: https://pandas-select.readthedocs.io/
    :alt: Documentation status
 

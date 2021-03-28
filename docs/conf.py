@@ -10,7 +10,9 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
+import inspect
 import os
+import subprocess
 import sys
 
 import pandas_select
@@ -39,7 +41,7 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
     "sphinx.ext.intersphinx",
-    "sphinx.ext.viewcode",
+    "sphinx.ext.linkcode",
     "sphinx.ext.napoleon",
 ]
 
@@ -82,3 +84,47 @@ add_module_names = False
 
 copybutton_prompt_text = r">>> |\.\.\.\: |\$ |In \[\d*\]: | {2,5}\.\.\.: | {5,8}: "
 copybutton_prompt_is_regexp = True
+
+
+def linkcode_resolve(domain, info):
+    """Determine the URL corresponding to Python object."""
+    if domain != "py":
+        return None
+
+    submod = sys.modules.get(info["module"])
+    if submod is None:
+        return None
+
+    obj = submod
+    for part in info["fullname"].split("."):
+        try:
+            obj = getattr(obj, part)
+        except AttributeError:
+            return None
+
+    try:
+        fn = inspect.getsourcefile(inspect.unwrap(obj))
+    except TypeError:
+        fn = None
+    if not fn:
+        return None
+
+    try:
+        source, lineno = inspect.getsourcelines(obj)
+    except OSError:
+        lineno = None
+
+    fn = os.path.relpath(fn, start=os.path.dirname(pandas_select.__file__))
+
+    linespec = f"#L{lineno}-L{lineno + len(source) - 1}" if lineno else ""
+
+    try:
+        tag = (
+            subprocess.check_output(["git", "rev-parse", "--short", "HEAD"])
+            .decode("utf-8")
+            .strip()
+        )
+    except subprocess.CalledProcessError:
+        tag = f"v{release}"
+
+    return f"https://github.com/jeffzi/pandas-select/blob/{tag}/pandas_select/{fn}{linespec}"
